@@ -10,6 +10,36 @@ const form = useForm({
 const submit = () => {
   form.post('/login');
 }; 
+
+import { onMounted } from 'vue';
+
+onMounted(() => {
+    // Function to dynamically load CSS
+    const loadCSS = (href) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+    };
+
+    // Function to dynamically load JS
+    const loadScript = (src) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        document.body.appendChild(script);
+    };
+
+    // Load CSS files from public/
+    loadCSS('/css/styles.css');
+    
+
+    // Load JS files from public/
+    loadScript('/js/all.min.js');
+    loadScript('/js/feather.min.js');
+    loadScript('/js/scripts.js');
+
+});
 </script>
 
 <template>
