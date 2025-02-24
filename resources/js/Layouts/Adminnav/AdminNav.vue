@@ -61,7 +61,7 @@ function logout() {
                                 <div class="nav-link-icon"><i data-feather="activity"></i></div>
                                 Dashboard
                             </a>
-                            <a class="nav-link" href="/userlist">
+                            <a class="nav-link" href="/admin/adminuserlist">
                                 <div class="nav-link-icon"><i data-feather="users"></i></div>
                                 Users
                             </a>

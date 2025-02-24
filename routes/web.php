@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // Login page
@@ -47,8 +48,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
         // Admin Navigation Routes
-        Route::get('/userlist', [AdminController::class, 'show'])->name('admin.adminuserlist');
+        Route::get('/adminuserlist', [AdminController::class, 'show'])->name('admin.adminuserlist');
         Route::get('/AdminEquipmentList', [AdminController::class, 'show'])->name('admin.AdminEquipmentList');
+        // Route::get('/adminuserlist', [AdminController::class, 'adminUserList']);
+        // Route::get('/AdminEquipmentList', [AdminController::class, 'adminEquipmentList']);
+
+        //Admin Crud Routes
+        Route::post('/register', [UserController::class, 'register']);
+        Route::get('/users', [UserController::class, 'index']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+
     });
 
     // Staff Routes
