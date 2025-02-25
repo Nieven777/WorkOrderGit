@@ -11,7 +11,7 @@ const users = ref([]);
 // Fetch users from the backend
 const fetchUsers = async () => {
     try {
-        const response = await axios.get('/users');
+        const response = await axios.get('/admin/adminusertable');
         users.value = response.data;
 
         // Wait for DOM to update, then initialize DataTables & feather icons
@@ -55,29 +55,42 @@ const editUser = (user) => {
     showModal.value = true;
 };
 
-// Toggle User Status (Active/Inactive)
-const toggleUserStatus = async (user) => {
-    try {
-        await axios.put(`/users/${user.id}/toggle-status`);
-        fetchUsers(); // Refresh the user list
-    } catch (error) {
-        console.error("Error updating status:", error);
-    }
-};
+
 
 
 // Initialize DataTable
 const initializeDataTable = () => {
-    const table = $('#dataTable').DataTable();
-    table.destroy(); // Prevent multiple initializations
-    $('#dataTable').DataTable();
+    if (!window.jQuery || !$.fn.DataTable) {
+        console.error("⚠️ jQuery or DataTables is not loaded yet.");
+        return;
+    }
+
+    // Check if DataTable is already initialized to prevent duplicate initialization
+    if (!$.fn.DataTable.isDataTable('#dataTable')) {
+        $('#dataTable').DataTable({
+            destroy: true, // Ensure it resets properly
+            responsive: true,
+            autoWidth: false,
+        });
+        console.log("✅ DataTables initialized");
+    }
+    
+    // Ensure feather icons are applied after DataTable loads
+    if (window.feather) {
+        feather.replace();
+    } else {
+        console.error("⚠️ Feather icons library is not yet loaded.");
+    }
 };
+
+
+
+
 
 // Load users on component mount
 onMounted(() => {
     fetchUsers();
 
-    // Dynamically load CSS & JS
     const loadCSS = (href) => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -93,17 +106,41 @@ onMounted(() => {
         document.body.appendChild(script);
     };
 
+    // Load CSS first
     loadCSS('/css/styles.css');
     loadCSS('/css/dataTables.bootstrap4.min.css');
 
-    loadScript('/js/all.min.js');
-    loadScript('/js/feather.min.js', () => feather.replace());
-    loadScript('/js/jquery-3.5.1.min.js');
-    loadScript('/js/bootstrap.bundle.min.js');
-    loadScript('/js/jquery.dataTables.min.js');
-    loadScript('/js/scripts.js');
-    loadScript('/js/dataTables.bootstrap4.min.js');
+    // Load jQuery first
+    loadScript('/js/jquery-3.5.1.min.js', () => {
+        console.log("✅ jQuery loaded");
+
+        // Load Bootstrap and DataTables after jQuery
+        loadScript('/js/bootstrap.bundle.min.js');
+        loadScript('/js/jquery.dataTables.min.js', () => {
+            console.log("✅ DataTables loaded");
+
+            loadScript('/js/dataTables.bootstrap4.min.js', () => {
+                console.log("✅ DataTables Bootstrap loaded");
+                initializeDataTable(); // Initialize after loading
+            });
+        });
+
+        // Load other scripts
+        loadScript('/js/all.min.js');
+
+        // Load Feather icons last
+        loadScript('/js/feather.min.js', () => {
+            console.log("✅ Feather icons loaded");
+            feather.replace(); // Apply icons after loading
+        });
+
+        // Load scripts.js after everything else
+        loadScript('/js/scripts.js');
+    });
 });
+
+
+
 </script>
 
 <template>
@@ -134,27 +171,26 @@ onMounted(() => {
                   <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                       <tr>
-                        <th>Name</th>
-                        <th>Email</th>
+                        <th>User</th>
+                        <th>ID Number</th>
                         <th>Role</th>
                         <th>Department</th>
-                        <th>Status</th>
+                        <th>Institutional Email</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="user in users" :key="user.id">
-                        <td>{{ user.first_name }} {{ user.last_name }}</td>
-                        <td>{{ user.email }}</td>
+                        <td>{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}</td>
+                        <td>{{ user.user_id }}</td>
                         <td>{{ user.role }}</td>
                         <td>{{ user.department }}</td>
+                        <td>{{ user.email }}</td>
                         <td>
                             <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" @click="editUser(user)">
                             <i data-feather="edit"></i>
                             </button>
-                            <button class="btn btn-datatable btn-icon btn-transparent-dark" @click="toggleUserStatus(user)">
-                            <i :class="user.status === 'Active' ? 'text-success' : 'text-danger'" data-feather="power"></i>
-                            </button>
+                            
                             <button class="btn btn-datatable btn-icon btn-transparent-dark" @click="deleteUser(user.id)">
                             <i data-feather="trash-2"></i>
                             </button>

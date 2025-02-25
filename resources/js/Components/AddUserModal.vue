@@ -39,13 +39,25 @@
                         </div>
                         <div class="form-row">
                           <div class="form-group col-md-4">
-                            <label class="small mb-1" for="inputCollege">College</label>
-                            <input v-model="form.college" class="form-control" id="inputCollege" type="text" />
+                          <label class="small mb-1" for="inputCollege">College</label>
+                          <select v-model="form.college" class="form-control" id="inputCollege">
+                              <option value="">Select College</option>
+                              <option v-for="college in colleges" :key="college.c_u_id" :value="college.college_unit">
+                                {{ college.college_unit }}
+                              </option>
+                            </select>
                           </div>
+
                           <div class="form-group col-md-4">
                             <label class="small mb-1" for="inputDepartment">Department</label>
-                            <input v-model="form.department" class="form-control" id="inputDepartment" type="text" />
+                            <select v-model="form.department" class="form-control" id="inputDepartment">
+                              <option value="">Select Department</option>
+                              <option v-for="department in departments" :key="department.deaprtmemt_id" :value="department.department">
+                                {{ department.department }}
+                              </option>
+                            </select>
                           </div>
+
                           <div class="form-group col-md-4">
                             <label class="small mb-1" for="inputRole">Role</label>
                             <select v-model="form.role" class="form-control" id="inputRole">
@@ -109,46 +121,60 @@
     emits: ["close"],
   
     data() {
-      return {
-        loading: false,
-        form: {
-          username: "",
-          first_name: "",
-          middle_name: "",
-          last_name: "",
-          college: "",
-          department: "",
-          role: "",
-          email: "",
-          user_id: "",
-          password: "",
-          password_confirmation: "",
-          profile_picture: null,
-        },
-        errors: {},
-      };
+  return {
+    loading: false,
+    colleges: [], // Stores fetched colleges
+    departments: [], // Stores fetched departments
+    form: {
+      username: "",
+      first_name: "",
+      middle_name: "",
+      last_name: "",
+      college: "",
+      department: "",
+      role: "",
+      email: "",
+      user_id: "",
+      password: "",
+      password_confirmation: "",
+      profile_picture: null,
     },
+    errors: {},
+  };
+},
+mounted() {
+  this.getColleges();
+  this.getDepartments();
+},
+
   
     methods: {
       async registerUser() {
-        this.errors = {};
-        this.loading = true;
-        try {
-          let formData = new FormData();
-          for (let key in this.form) {
-            formData.append(key, this.form[key]);
-          }
-          await axios.post("/register", formData);
-          alert("User registered successfully!");
-          this.resetForm();
-          this.$emit("close");
-        } catch (error) {
-          if (error.response && error.response.data.errors) {
-            this.errors = error.response.data.errors;
-          }
-        }
-        this.loading = false;
-      },
+  this.errors = {};
+  this.loading = true;
+  try {
+    let formData = new FormData();
+    for (let key in this.form) {
+      formData.append(key, this.form[key]);
+    }
+
+    const response = await axios.post("/register", formData);
+    console.log("API Response:", response.data); // Check the response in the browser console
+
+    alert("User registered successfully!");
+    this.resetForm();
+    this.$emit("close");
+  } catch (error) {
+    console.error("Error:", error.response ? error.response.data : error);
+    if (error.response && error.response.data.errors) {
+      this.errors = error.response.data.errors;
+    }
+  }
+  this.loading = false;
+},
+
+
+
       resetForm() {
         this.form = this.$options.data().form;
       },
@@ -158,6 +184,25 @@
       handleFileUpload(event) {
         this.form.profile_picture = event.target.files[0];
       },
+      async getColleges() {
+    try {
+      const response = await axios.get("/api/colleges");
+      this.colleges = response.data;
+    } catch (error) {
+      console.error("Error fetching colleges:", error);
+    }
+  },
+
+  async getDepartments() {
+    try {
+      const response = await axios.get("/api/departments");
+      this.departments = response.data;
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+    }
+  },
     },
   };
+
+  
   </script>

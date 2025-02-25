@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // Login page
@@ -28,7 +29,7 @@ Route::get('/', function () {
 // Guest routes (Login & Register)
 Route::middleware('guest')->group(function () {
     Route::get('/login', fn () => Inertia::render('Auth/Login'))->name('login');
-    Route::get('/register', fn () => Inertia::render('Auth/Register'))->name('register');
+    
 });
 
 // Middleware for authenticated users
@@ -54,8 +55,8 @@ Route::middleware(['auth'])->group(function () {
         // Route::get('/AdminEquipmentList', [AdminController::class, 'adminEquipmentList']);
 
         //Admin Crud Routes
-        Route::post('/register', [UserController::class, 'register']);
-        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/register', [RegisteredUserController::class, 'register']);
+        Route::get('/adminusertable', [UserController::class, 'index']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 

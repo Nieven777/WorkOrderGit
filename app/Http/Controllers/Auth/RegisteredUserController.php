@@ -2,51 +2,54 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Inertia\Inertia;
-use Inertia\Response;
-
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Controller;
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
-    public function create(): Response
+    public function register(Request $request)
     {
-        return Inertia::render('Auth/Register');
-    }
-
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|unique:users',
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'college' => 'required',
+            'department' => 'required',
+            'role' => 'required',
+            'email' => 'required|email|unique:users',
+            'user_id' => 'required|unique:users',
+            'password' => 'required|min:6|confirmed',
+            'profile_picture' => 'nullable|image|max:2048', // Max 2MB image
         ]);
-
+    
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+    
+        // Handle profile picture upload
+        $profilePicturePath = null;
+        if ($request->hasFile('profile_picture')) {
+            $profilePicturePath = $request->file('profile_picture')->store('profiles', 'public');
+        }
+    
+        // Create user
         $user = User::create([
-            'name' => $request->name,
+            'username' => $request->username,
+            'first_name' => $request->first_name,
+            'middle_name' => $request->middle_name,
+            'last_name' => $request->last_name,
+            'college' => $request->college,
+            'department' => $request->department,
+            'role' => $request->role,
             'email' => $request->email,
+            'user_id' => $request->user_id,
+            'profile_picture' => $profilePicturePath,
             'password' => Hash::make($request->password),
         ]);
-
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return redirect(RouteServiceProvider::HOME);
+    
+        return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
     }
 }

@@ -13,15 +13,16 @@ return new class extends Migration {
             $table->string('first_name');
             $table->string('middle_name')->nullable();
             $table->string('last_name');
-            $table->string('college')->nullable();
-            $table->string('department')->nullable();
-            $table->enum('role', ['admin', 'employee', 'staff']);
+            $table->string('college');
+            $table->string('department');
+            $table->string('role');
             $table->string('email')->unique();
             $table->string('user_id')->unique();
             $table->string('profile_picture')->nullable();
             $table->string('password');
             $table->timestamps();
         });
+        
     }
 
     public function down(): void
