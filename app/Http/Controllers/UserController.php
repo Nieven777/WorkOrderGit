@@ -19,6 +19,7 @@ class UserController extends Controller
             'last_name', 
             'email', 
             'role', 
+            'college',
             'department', 
             'user_id'
         )->get();

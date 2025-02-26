@@ -24,7 +24,8 @@ Route::middleware('auth:sanctum')->get('/adminusertable', function (Request $req
     return $request->user();
 });
 Route::put('/users/{id}', [UserController::class, 'update']);
-Route::put('/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+
 
 Route::get('/colleges', [CollegeDepartmentController::class, 'getColleges']);
 Route::get('/departments', [CollegeDepartmentController::class, 'getDepartments']);

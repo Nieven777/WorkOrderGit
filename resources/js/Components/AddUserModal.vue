@@ -62,9 +62,9 @@
                             <label class="small mb-1" for="inputRole">Role</label>
                             <select v-model="form.role" class="form-control" id="inputRole">
                               <option value="">Select Role</option>
-                              <option value="Admin">Admin</option>
-                              <option value="Employee">Employee</option>
-                              <option value="Staff">Staff</option>
+                              <option value="admin">Admin</option>
+                              <option value="employee">Employee</option>
+                              <option value="staff">Staff</option>
                             </select>
                           </div>
                         </div>
@@ -121,88 +121,106 @@
     emits: ["close"],
   
     data() {
-  return {
-    loading: false,
-    colleges: [], // Stores fetched colleges
-    departments: [], // Stores fetched departments
-    form: {
-      username: "",
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      college: "",
-      department: "",
-      role: "",
-      email: "",
-      user_id: "",
-      password: "",
-      password_confirmation: "",
-      profile_picture: null,
+      return {
+        loading: false,
+        colleges: [], // Stores fetched colleges
+        departments: [], // Stores fetched departments
+        form: {
+          username: "",
+          first_name: "",
+          middle_name: "",
+          last_name: "",
+          college: "",
+          department: "",
+          role: "",
+          email: "",
+          user_id: "",
+          password: "",
+          password_confirmation: "",
+          profile_picture: null,
+        },
+        errors: {},
+      };
     },
-    errors: {},
-  };
-},
-mounted() {
-  this.getColleges();
-  this.getDepartments();
-},
-
+  
+    mounted() {
+      this.getColleges();
+      this.getDepartments();
+    },
   
     methods: {
       async registerUser() {
-  this.errors = {};
-  this.loading = true;
-  try {
-    let formData = new FormData();
-    for (let key in this.form) {
-      formData.append(key, this.form[key]);
-    }
-
-    const response = await axios.post("/register", formData);
-    console.log("API Response:", response.data); // Check the response in the browser console
-
-    alert("User registered successfully!");
-    this.resetForm();
-    this.$emit("close");
-  } catch (error) {
-    console.error("Error:", error.response ? error.response.data : error);
-    if (error.response && error.response.data.errors) {
-      this.errors = error.response.data.errors;
-    }
-  }
-  this.loading = false;
-},
-
-
-
-      resetForm() {
-        this.form = this.$options.data().form;
+        this.errors = {};
+        this.loading = true;
+        try {
+          let formData = new FormData();
+          for (let key in this.form) {
+            formData.append(key, this.form[key]);
+          }
+  
+          // Debugging: Check form data
+          console.log("Sending Form Data:", Object.fromEntries(formData.entries()));
+  
+          await axios.post("/api/register", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+  
+          alert("User registered successfully!");
+          this.resetForm();
+          this.$emit("close");
+        } catch (error) {
+          console.error("Error:", error.response ? error.response.data : error);
+          if (error.response && error.response.data.errors) {
+            this.errors = error.response.data.errors;
+          }
+        }
+        this.loading = false;
       },
+  
+      resetForm() {
+        this.form = {
+          username: "",
+          first_name: "",
+          middle_name: "",
+          last_name: "",
+          college: "",
+          department: "",
+          role: "",
+          email: "",
+          user_id: "",
+          password: "",
+          password_confirmation: "",
+          profile_picture: null,
+        };
+      },
+  
       closeModal() {
         this.$emit("close");
       },
+  
       handleFileUpload(event) {
         this.form.profile_picture = event.target.files[0];
       },
+  
       async getColleges() {
-    try {
-      const response = await axios.get("/api/colleges");
-      this.colleges = response.data;
-    } catch (error) {
-      console.error("Error fetching colleges:", error);
-    }
-  },
-
-  async getDepartments() {
-    try {
-      const response = await axios.get("/api/departments");
-      this.departments = response.data;
-    } catch (error) {
-      console.error("Error fetching departments:", error);
-    }
-  },
+        try {
+          const response = await axios.get("/api/colleges");
+          this.colleges = response.data;
+        } catch (error) {
+          console.error("Error fetching colleges:", error);
+        }
+      },
+  
+      async getDepartments() {
+        try {
+          const response = await axios.get("/api/departments");
+          this.departments = response.data;
+        } catch (error) {
+          console.error("Error fetching departments:", error);
+        }
+      },
     },
   };
-
-  
   </script>

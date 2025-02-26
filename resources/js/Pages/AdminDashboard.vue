@@ -3,7 +3,7 @@ import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
 import { onMounted } from 'vue';
 
 onMounted(() => {
-    // Function to dynamically load CSS
+
     const loadCSS = (href) => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -11,26 +11,47 @@ onMounted(() => {
         document.head.appendChild(link);
     };
 
-    // Function to dynamically load JS
-    const loadScript = (src) => {
+    const loadScript = (src, callback) => {
         const script = document.createElement('script');
         script.src = src;
         script.defer = true;
+        script.onload = callback || null;
         document.body.appendChild(script);
-    };
+    }; 
 
-    // Load CSS files from public/
+    // Load CSS first
     loadCSS('/css/styles.css');
     loadCSS('/css/dataTables.bootstrap4.min.css');
 
-    // Load JS files from public/
-    loadScript('/js/all.min.js');
-    loadScript('/js/feather.min.js');
-    loadScript('/js/jquery-3.5.1.min.js');
-    loadScript('/js/bootstrap.bundle.min.js');
-    loadScript('/js/jquery.dataTables.min.js');
-    loadScript('/js/scripts.js');
-    loadScript('/js/dataTables.bootstrap4.min.js');
+    // Load jQuery first
+    loadScript('/js/jquery-3.5.1.min.js', () => {
+        console.log("✅ jQuery loaded");
+
+        // Load Bootstrap and DataTables after jQuery
+        loadScript('/js/bootstrap.bundle.min.js');
+        loadScript('/js/jquery.dataTables.min.js', () => {
+            console.log("✅ DataTables loaded");
+
+            loadScript('/js/dataTables.bootstrap4.min.js', () => {
+                console.log("✅ DataTables Bootstrap loaded");
+                initializeDataTable(); // Initialize after loading
+            });
+        });
+
+        // Load other scripts
+        loadScript('/js/all.min.js');
+
+        // Load Feather icons last
+        loadScript('/js/feather.min.js', () => {
+            console.log("✅ Feather icons loaded");
+            feather.replace(); // Apply icons after loading
+        });
+
+        loadScript('/demo/datatables-demo.js');
+
+        // Load scripts.js after everything else
+        loadScript('/js/scripts.js');
+    });
 });
 </script>
 

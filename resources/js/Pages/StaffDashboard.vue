@@ -1,53 +1,38 @@
 <script setup>
-import { router } from '@inertiajs/vue3';
-// import { Link} from '@inertiajs/inertia-vue3';
-import { ref, onMounted } from 'vue';
-
-function logout() {
-    router.post('/logout', {}, {
-        onFinish: () => {
-            router.visit('/login'); // Redirect to login page after logout
-        }
-    });
-}
-
-
-const showingNavigationDropdwn = ref(false);
-
-const files = [
-    '/assets/js/jquery-3.5.1.min.js',
-    '/assets/js/bootstrap.bundle.min.js',
-    '/assets/js/scripts.js',
-    '/assets/js/all.min.js',
-    '/assets/js/Chart.min.js',
-    '/assets/js/feather.min.js',
-    '/assets/css/styles.css',
-
-];
-
-const loadFiles = () => {
-    files.forEach(file => {
-        if (file.endsWith('.js')) {
-        const script = document.createElement('script');
-        script.src = file;
-        script.async = true;
-        document.body.appendChild(script);
-    } else if (file.endsWith('.css')) {
-        const link = document.createElement('link');
-        link.href = src;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-    }
-    });
-};
+import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
+import { onMounted } from 'vue';
 
 onMounted(() => {
-    loadFiles();
+    // Function to dynamically load CSS
+    const loadCSS = (href) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+    };
+
+    // Function to dynamically load JS
+    const loadScript = (src) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        document.body.appendChild(script);
+    };
+
+    // Load CSS files from public/
+    loadCSS('/css/styles.css');
+    loadCSS('/css/dataTables.bootstrap4.min.css');
+
+    // Load JS files from public/
+    loadScript('/js/all.min.js');
+    loadScript('/js/feather.min.js');
+    loadScript('/js/jquery-3.5.1.min.js');
+    loadScript('/js/bootstrap.bundle.min.js');
+    loadScript('/js/jquery.dataTables.min.js');
+    loadScript('/js/scripts.js');
+    loadScript('/js/dataTables.bootstrap4.min.js');
 });
-
-
 </script>
- 
 <template>
     <body class="nav-fixed">
         <nav class="topnav navbar navbar-expand shadow justify-content-between justify-content-sm-start navbar-light bg-white" id="sidenavAccordion">
@@ -71,7 +56,7 @@ onMounted(() => {
             <!-- Navbar Items-->
             <ul class="navbar-nav align-items-center ml-auto">
                 
-                <!-- Navbar Search Dropdown-->
+                <!-- Navbar Search Dropdown--> 
                 <!-- * * Note: * * Visible only below the md breakpoint-->
                 
                 <!-- User Dropdown-->

@@ -41,7 +41,7 @@ function logout() {
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="#">
                             <div class="dropdown-item-icon"><i data-feather="settings"></i></div>
-                            Account
+                            Profile
                         </a>
                         <a class="dropdown-item" @click="logout">
                             <div class="dropdown-item-icon"><i data-feather="log-out"></i></div>

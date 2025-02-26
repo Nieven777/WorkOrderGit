@@ -15,6 +15,7 @@ class RegisteredUserController extends Controller
         $validator = Validator::make($request->all(), [
             'username' => 'required|unique:users',
             'first_name' => 'required',
+            'middle_name' => 'nullable',
             'last_name' => 'required',
             'college' => 'required',
             'department' => 'required',

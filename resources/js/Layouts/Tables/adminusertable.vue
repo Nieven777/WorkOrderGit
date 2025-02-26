@@ -1,12 +1,15 @@
 <script setup>
 import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
 import AddUserModal from '@/Components/AddUserModal.vue';
+import EditUserModal from '@/Components/EditUserModal.vue';
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
 import feather from 'feather-icons';
 
 const showModal = ref(false);
+const modalType = ref(''); // Track whether to show Add or Edit modal
 const users = ref([]);
+const selectedUser = ref(null);
 
 // Fetch users from the backend
 const fetchUsers = async () => {
@@ -14,7 +17,6 @@ const fetchUsers = async () => {
         const response = await axios.get('/admin/adminusertable');
         users.value = response.data;
 
-        // Wait for DOM to update, then initialize DataTables & feather icons
         await nextTick(() => {
             initializeDataTable();
             feather.replace();
@@ -24,39 +26,26 @@ const fetchUsers = async () => {
     }
 };
 
-// Open modal
-const openModal = () => {
+// Open Add User Modal
+const openAddUserModal = () => {
+    selectedUser.value = null; // Reset user selection
+    modalType.value = 'add';
     showModal.value = true;
 };
+
+// Open Edit User Modal
+const openEditUserModal = (user) => {
+    selectedUser.value = { ...user }; // Copy user details
+    modalType.value = 'edit';
+    showModal.value = true;
+};
+
 
 // Close modal & refresh users
 const closeModal = () => {
     showModal.value = false;
-    fetchUsers(); // Refresh users after adding
+    fetchUsers(); // Refresh users after adding/editing
 };
-
-// Delete user
-const deleteUser = async (id) => {
-    if (confirm("Are you sure you want to delete this user?")) {
-        try {
-            await axios.delete(`/users/${id}`);
-            fetchUsers(); // Refresh list after deletion
-        } catch (error) {
-            console.error("Error deleting user:", error);
-        }
-    }
-};
-
-const selectedUser = ref(null);
-
-// Open Edit User Modal
-const editUser = (user) => {
-    selectedUser.value = { ...user }; // Copy user details
-    showModal.value = true;
-};
-
-
-
 
 // Initialize DataTable
 const initializeDataTable = () => {
@@ -104,7 +93,7 @@ onMounted(() => {
         script.defer = true;
         script.onload = callback || null;
         document.body.appendChild(script);
-    };
+    }; 
 
     // Load CSS first
     loadCSS('/css/styles.css');
@@ -134,6 +123,8 @@ onMounted(() => {
             feather.replace(); // Apply icons after loading
         });
 
+        loadScript('/demo/datatables-demo.js');
+
         // Load scripts.js after everything else
         loadScript('/js/scripts.js');
     });
@@ -162,7 +153,7 @@ onMounted(() => {
               <div class="card-header">
                 User List
                 <div class="d-flex justify-content-end">
-                  <button class="btn btn-primary" type="button" @click="openModal">Add User +</button>
+                  <button class="btn btn-primary" type="button" data-toggle="modal" @click="openAddUserModal">Add User +</button>
                 </div>
               </div>
 
@@ -172,8 +163,9 @@ onMounted(() => {
                     <thead>
                       <tr>
                         <th>User</th>
-                        <th>ID Number</th>
+                        <th>ID No.</th>
                         <th>Role</th>
+                        <th>College</th>
                         <th>Department</th>
                         <th>Institutional Email</th>
                         <th>Actions</th>
@@ -184,16 +176,17 @@ onMounted(() => {
                         <td>{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}</td>
                         <td>{{ user.user_id }}</td>
                         <td>{{ user.role }}</td>
+                        <td>{{ user.college }}</td>
                         <td>{{ user.department }}</td>
                         <td>{{ user.email }}</td>
                         <td>
-                            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" @click="editUser(user)">
+                          <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" title="edit" @click="openEditUserModal(user)">
                             <i data-feather="edit"></i>
-                            </button>
+                          </button>
                             
-                            <button class="btn btn-datatable btn-icon btn-transparent-dark" @click="deleteUser(user.id)">
-                            <i data-feather="trash-2"></i>
-                            </button>
+                          <button class="btn btn-datatable btn-icon btn-transparent-dark" title="delete" @click="deleteUser(user.id)">
+                          <i data-feather="trash-2"></i>
+                          </button>
                         </td>
 
                       </tr>
@@ -205,7 +198,9 @@ onMounted(() => {
           </div>
 
           <!-- Include the AddUserModal -->
-          <AddUserModal :showModal="showModal" @close="closeModal" />
+          <AddUserModal v-if="modalType === 'add'" :showModal="showModal" @close="closeModal" />
+          <EditUserModal v-if="modalType === 'edit'" :showModal="showModal" :user="selectedUser" @close="closeModal" />
+
         </main>
       </div>
     </div>
