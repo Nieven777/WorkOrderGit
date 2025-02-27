@@ -12,5 +12,10 @@ class EmployeeController extends Controller
     {
         return Inertia::render('EmployeeDashboard'); // This points to your Vue component
     }
+
+    public function requestWork(): Response
+    {
+        return Inertia::render('employee/EmployeeRequestWork'); 
+    }
 }
 

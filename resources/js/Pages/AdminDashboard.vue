@@ -2,7 +2,7 @@
 import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
 import { onMounted } from 'vue';
 
-onMounted(() => {
+onMounted(() => { 
 
     const loadCSS = (href) => {
         const link = document.createElement('link');

@@ -50,7 +50,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Admin Navigation Routes
         Route::get('/adminuserlist', [AdminController::class, 'show'])->name('admin.adminuserlist');
-        Route::get('/AdminEquipmentList', [AdminController::class, 'show'])->name('admin.AdminEquipmentList');
+        Route::get('/AdminEquipmentList', [AdminController::class, 'equipmentlist'])->name('admin.AdminEquipmentList');
         // Route::get('/adminuserlist', [AdminController::class, 'adminUserList']);
         // Route::get('/AdminEquipmentList', [AdminController::class, 'adminEquipmentList']);
 
@@ -65,12 +65,15 @@ Route::middleware(['auth'])->group(function () {
     // Staff Routes
     Route::middleware(['role:staff'])->prefix('staff')->name('staff.')->group(function () {
         Route::get('/dashboard', [StaffController::class, 'index'])->name('dashboard');
-    });
+    }); 
 
     // Employee Routes
     Route::middleware(['role:employee'])->prefix('employee')->name('employee.')->group(function () {
         Route::get('/dashboard', [EmployeeController::class, 'index'])->name('dashboard');
+        Route::get('/EmployeeRequestWork', [EmployeeController::class, 'requestWork'])->name('employee.EmployeeRequestWork');
     });
+
+
 
     // Logout
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\RequisitionerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CollegeDepartmentController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ConcernController;
+
 
 
 
@@ -31,3 +34,12 @@ Route::get('/colleges', [CollegeDepartmentController::class, 'getColleges']);
 Route::get('/departments', [CollegeDepartmentController::class, 'getDepartments']);
 
 Route::post('/register', [RegisteredUserController::class, 'register']);
+
+
+//Employee work order request
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return response()->json($request->user());
+});
+
+Route::get('/concerns', [ConcernController::class, 'index']);
+Route::get('/wrequisitioner', [RequisitionerController::class, 'index']);
