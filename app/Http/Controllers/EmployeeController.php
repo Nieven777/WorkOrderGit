@@ -17,5 +17,9 @@ class EmployeeController extends Controller
     {
         return Inertia::render('employee/EmployeeRequestWork'); 
     }
+    public function myrequestWork(): Response
+    {
+        return Inertia::render('employee/MyWorkOrderRequests'); 
+    }
 }
 

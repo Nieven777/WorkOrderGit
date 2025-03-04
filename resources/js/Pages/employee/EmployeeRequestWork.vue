@@ -1,185 +1,305 @@
 <template>
-    <body class="nav-fixed">
-      <EmployeeNav />
-      <div id="layoutSidenav" style="width: 95%;">
-        <div id="layoutSidenav_content">
-          <main> 
-            <header class="page-header pb-10">
-              <div class="container">
-                <div class="row align-items-center justify-content-between">
-                  <div class="col-auto mt-4">
-                    <h3>Request Work Order Page</h3>
-                  </div>
+  <body class="nav-fixed">
+    <EmployeeNav />
+    <div id="layoutSidenav" style="width: 95%;">
+      <div id="layoutSidenav_content">
+        <main>
+          <header class="page-header pb-10">
+            <div class="container">
+              <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                  <h3>Request Work Order Page</h3>
                 </div>
               </div>
-            </header>
-  
-            <!-- Main page content -->
-            <div class="container mt-n10">
-              <div class="row">
-                <div class="col-lg-12">
-                  <!-- Account Details Card -->
-                  <div class="card shadow-lg">
-                    <div class="card-header bg-cyan text-white">
-                      <h5 class="mb-0">User Details</h5>
-                    </div>
-                    <div class="card-body">
-                      <form>
-                        <div class="row">
-                          <div class="form-group col-md-6">
-                            <label class="small mb-1">Requested by</label>
-                            <input class="form-control" type="text" v-model="fullName" disabled/>
-                          </div>
-                          <div class="form-group col-md-3 d-flex align-items-center gap-3">
-                            <div class="flex-grow-1">
-                                <label for="requisitioner" class="small mb-1">Select Requisitioner type:</label>
-                                <select v-model="selectedRtype" class="form-control">
-                                    <option v-for="wrequisitioner in wrequisitioner" :key="wrequisitioner" :value="wrequisitioner">
-                                        {{ wrequisitioner }}
-                                    </option>
-                                    <option value="other">Other type</option>
-                                </select>
-                            </div>
+            </div>
+          </header>
 
-                                <!-- Show input field if "Other concern" is selected -->
-                                <div v-if="selectedRtype === 'other'" class="form-group col-md-12 flex-grow-1">
-                                    <label for="otherRtype" class="small mb-1 ">Specify the type:</label>
-                                    <input type="text" v-model="otherRtype" class="form-control col-md-12" placeholder="Enter position" />
-                                </div>
-                            </div>
-                        </div>
-  
-                        <div class="row">
-                          <div class="form-group col-md-6">
-                            <label class="small mb-1">College/Unit</label>
-                            <input class="form-control" type="text" v-model="user.college" disabled/>
-                          </div>
-                          <div class="form-group col-md-6">
-                            <label class="small mb-1">Department</label>
-                            <input class="form-control" type="text" v-model="user.department" disabled />
-                          </div>
-                        </div>
-                      </form>
-                    </div>
+          <!-- Main page content -->
+          <div class="container mt-n10">
+            <!-- User Details Card -->
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="card shadow-lg">
+                  <div class="card-header bg-cyan text-white">
+                    <h5 class="mb-0">User Details</h5>
                   </div>
-                </div>
-              </div>
-  
-              <!-- Work Order Details Card -->
-              <div class="row mt-4">
-                <div class="col-lg-12">
-                  <div class="card shadow-lg">
-                    <div class="card-header bg-green text-white">
-                      <h5 class="mb-0">Work Order Details</h5>
-                    </div>
-                    <div class="card-body">
-                      <form>
-                        <div class="row">
-                            <div class="form-group col-md-6">
-                                <label for="concern" class="small mb-1">Select Concern:</label>
-                                <select v-model="selectedConcern" class="form-control">
-                                    <option v-for="concern in concerns" :key="concern" :value="concern">
-                                        {{ concern }}
-                                    </option>
-                                    <option value="other">Other concern</option>
-                                </select>
+                  <div class="card-body">
+                    <form>
+                      <div class="row">
+                        <!-- Requested by (editable) -->
+                        <div class="form-group col-md-6">
+                          <label class="small mb-1">Requested by</label>
+                          <input class="form-control" type="text" v-model="requested_by" />
+                          <div v-if="errors.requested_by" class="text-danger">{{ errors.requested_by }}</div>
+                        </div>
 
-                                <!-- Show input field if "Other concern" is selected -->
-                                <div v-if="selectedConcern === 'other'" class="form-group col-md-12">
-                                    <label for="otherConcern" class="small mb-1 ">Specify your concern:</label>
-                                    <input type="text" v-model="otherConcern" class="form-control col-md-12" placeholder="Enter your concern" />
-                                </div>
-                            </div>
-                          <div class="form-group col-md-6">
-                            <label class="small mb-1">Date Requested</label>
-                            <input class="form-control" type="date" v-model="todayDate" disabled/>
-                          </div>
+                        <!-- Requisitioner Type -->
+                        <div class="form-group col-md-3">
+                          <label for="requisitioner" class="small mb-1">Select Requisitioner type:</label>
+                          <select v-model="selectedRtype" class="form-control" style="min-width: 100%; max-width: 100%;">
+                            <option value="">Select a type</option>
+                            <option v-for="item in wrequisitioner" :key="item" :value="item">
+                              {{ item }}
+                            </option>
+                            <option value="other">Other type</option>
+                          </select>
+                          <div v-if="errors.selectedRtype" class="text-danger">{{ errors.selectedRtype }}</div>
                         </div>
-  
-                        <div class="row">
-                          <div class="form-group col-md-12">
-                            <label class="small mb-1">Description</label>
-                            <textarea class="form-control" rows="3" ></textarea>
-                          </div>
+
+                        <!-- Other Requisitioner Type (if 'other') -->
+                        <div v-if="selectedRtype === 'other'" class="form-group col-md-3">
+                          <label for="otherRtype" class="small mb-1">Specify the type:</label>
+                          <input type="text" v-model="otherRtype" class="form-control" style="min-width: 100%;" placeholder="Enter position" />
+                          <div v-if="errors.otherRtype" class="text-danger">{{ errors.otherRtype }}</div>
                         </div>
-                      </form>
-                    </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="form-group col-md-6">
+                          <label class="small mb-1">College/Unit</label>
+                          <input class="form-control" type="text" v-model="user.college" disabled />
+                        </div>
+                        <div class="form-group col-md-6">
+                          <label class="small mb-1">Department</label>
+                          <input class="form-control" type="text" v-model="user.department" disabled />
+                        </div>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>
             </div>
-          </main>
+
+            <!-- Work Order Details Card -->
+            <div class="row mt-4">
+              <div class="col-lg-12">
+                <div class="card shadow-lg">
+                  <div class="card-header bg-green text-white">
+                    <h5 class="mb-0">Work Order Details</h5>
+                  </div>
+                  <div class="card-body">
+                    <form>
+                      <div class="row">
+                        <!-- Concern -->
+                        <div class="form-group col-md-6">
+                          <label for="concern" class="small mb-1">Select Concern:</label>
+                          <select v-model="selectedConcern" class="form-control">
+                            <option value="">Select a concern</option>
+                            <option v-for="item in concerns" :key="item" :value="item">
+                              {{ item }}
+                            </option>
+                            <option value="other">Other concern</option>
+                          </select>
+                          <div v-if="errors.selectedConcern" class="text-danger">{{ errors.selectedConcern }}</div>
+
+                          <!-- Other Concern (if 'other') -->
+                          <div v-if="selectedConcern === 'other'" class="form-group mt-2">
+                            <label for="otherConcern" class="small mb-1">Specify your concern:</label>
+                            <input type="text" v-model="otherConcern" class="form-control" placeholder="Enter your concern" />
+                            <div v-if="errors.otherConcern" class="text-danger">{{ errors.otherConcern }}</div>
+                          </div>
+                        </div>
+
+                        <!-- Date Requested -->
+                        <div class="form-group col-md-6">
+                          <label class="small mb-1">Date Requested</label>
+                          <input class="form-control" type="date" v-model="todayDate" disabled />
+                          <div v-if="errors.todayDate" class="text-danger">{{ errors.todayDate }}</div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <!-- Description -->
+                        <div class="form-group col-md-12">
+                          <label class="small mb-1">Description</label>
+                          <textarea class="form-control" rows="3" v-model="description"></textarea>
+                          <div v-if="errors.description" class="text-danger">{{ errors.description }}</div>
+                        </div>
+                      </div>
+                      <div class="col-md-12 mt-3">
+                        <button @click.prevent="submitForm" class="btn btn-primary">Submit Work Order</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal for Successful Submission -->
+    <div
+      v-if="modalVisible"
+      class="modal fade show d-block"
+      tabindex="-1"
+      role="dialog"
+      style="background: rgba(0, 0, 0, 0.5);"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Submission Successful</h5>
+          </div>
+          <div class="modal-body">
+            <p>Your work order has been submitted successfully!</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" @click="closeModal">Okay</button>
+          </div>
         </div>
       </div>
-    </body>
-  </template>
-  
-  <script setup>
-  import EmployeeNav from '@/Layouts/EmployeeNav/EmployeeNav.vue';
-  import { ref, computed, onMounted } from 'vue';
-  import axios from 'axios';
-  
-  //Conserns
-  const concerns = ref([]); // Stores fetched concerns
-    const selectedConcern = ref(''); // Selected concern
-    const otherConcern = ref(''); // Stores user-inputted concern
+    </div>
+  </body>
+</template>
 
-  //Requisitioner type
-    const wrequisitioner = ref([]);
-    const selectedRtype = ref('');
-    const otherRtype = ref('');
 
-    // Fetch requisitioner type from the API
-    const fetchRequisitioner = async () => {
-        try {
-            const response = await axios.get('/api/wrequisitioner'); // Fetch from Laravel API
-            wrequisitioner.value = response.data; // Update requisitioner list
-        } catch (error) {
-            console.error("Error fetching requisitioner:", error);
-        }
-    };
-// Fetch concerns from the API
-const fetchConcerns = async () => {
-    try {
-        const response = await axios.get('/api/concerns'); // Fetch from Laravel API
-        concerns.value = response.data; // Update concerns list
-    } catch (error) {
-        console.error("Error fetching concerns:", error);
-    }
+  
+<script setup>
+import EmployeeNav from '@/Layouts/EmployeeNav/EmployeeNav.vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+// Reactive properties for form fields
+const requested_by = ref('');
+const selectedRtype = ref('');
+const otherRtype = ref('');
+const selectedConcern = ref('');
+const otherConcern = ref('');
+const description = ref('');
+
+// Options for selects
+const concerns = ref([]);
+const wrequisitioner = ref([]);
+
+// User details and date
+const user = ref({
+  first_name: '',
+  middle_name: '',
+  last_name: '',
+  college: '',
+  department: '',
+  role: ''
+});
+const todayDate = ref('');
+
+// Errors object for validation messages
+const errors = ref({});
+
+// Modal visibility flag
+const modalVisible = ref(false);
+
+// Fetch requisitioner types from API
+const fetchRequisitioner = async () => {
+  try {
+    const response = await axios.get('/api/wrequisitioner');
+    wrequisitioner.value = response.data;
+  } catch (error) {
+    console.error("Error fetching requisitioner:", error);
+  }
 };
 
-  // Reactive variables
-  const user = ref({
-    first_name: '',
-    middle_name: '',
-    last_name: '',
-    college: '',
-    department: '',
-    role: ''
-  });
-  const todayDate = ref('');
-  
-  // Computed property to format full name
-  const fullName = computed(() => {
-    return `${user.value.first_name} ${user.value.middle_name ? user.value.middle_name + ' ' : ''}${user.value.last_name}`;
-  });
-  
-  // Fetch current user
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get('/api/user', { withCredentials: true });
-      user.value = response.data;
-      todayDate.value = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
-    } catch (error) {
-      console.error("Error fetching user:", error);
-    }
-  };
-  
-  // Call fetchUser when component mounts
-  onMounted(() => {
-    fetchUser();
-    fetchConcerns();
-    fetchRequisitioner();
+// Fetch concerns from API
+const fetchConcerns = async () => {
+  try {
+    const response = await axios.get('/api/concerns');
+    concerns.value = response.data;
+  } catch (error) {
+    console.error("Error fetching concerns:", error);
+  }
+};
+
+// Fetch current user data from API
+const fetchUser = async () => {
+  try {
+    const response = await axios.get('/api/user', { withCredentials: true });
+    user.value = response.data;
+    todayDate.value = new Date().toISOString().split('T')[0];
+  } catch (error) {
+    console.error("Error fetching user:", error);
+  }
+};
+
+// Validate form fields
+const validateForm = () => {
+  errors.value = {}; // Reset errors
+
+  if (!requested_by.value.trim()) {
+    errors.value.requested_by = "Requested by is required";
+  }
+  if (!selectedRtype.value) {
+    errors.value.selectedRtype = "Requisitioner type is required";
+  }
+  if (selectedRtype.value === 'other' && !otherRtype.value.trim()) {
+    errors.value.otherRtype = "Please specify the other type";
+  }
+  if (!selectedConcern.value) {
+    errors.value.selectedConcern = "Concern is required";
+  }
+  if (selectedConcern.value === 'other' && !otherConcern.value.trim()) {
+    errors.value.otherConcern = "Please specify your concern";
+  }
+  if (!todayDate.value) {
+    errors.value.todayDate = "Date requested is required";
+  }
+  if (!description.value.trim()) {
+    errors.value.description = "Description is required";
+  }
+
+  return Object.keys(errors.value).length === 0;
+};
+
+// Reset form fields after successful submission
+const resetForm = () => {
+  requested_by.value = '';
+  selectedRtype.value = '';
+  otherRtype.value = '';
+  selectedConcern.value = '';
+  otherConcern.value = '';
+  description.value = '';
+  // Optionally reset date to today's date:
+  todayDate.value = new Date().toISOString().split('T')[0];
+};
+
+// Form submission handler
+const submitForm = async () => {
+  if (!validateForm()) {
+    alert("Please fill in all required fields correctly.");
+    return;
+  }
+
+  try {
+    const payload = {
+      requested_by: requested_by.value,
+      requisitioner_type: selectedRtype.value === 'other' ? otherRtype.value : selectedRtype.value, // Store actual value
+      college: user.value.college,
+      department: user.value.department,
+      concern: selectedConcern.value === 'other' ? otherConcern.value : selectedConcern.value, // Store actual value
+      date_requested: todayDate.value,
+      description: description.value,
+    };
+
+    await axios.post('/api/submit-work-order', payload);
+    modalVisible.value = true;
+  } catch (error) {
+    console.error("Error submitting form:", error);
+    alert("Failed to submit work order.");
+  }
+};
+
+
+// Close modal and reset form fields
+const closeModal = () => {
+  modalVisible.value = false;
+  resetForm();
+};
+
+// Run initial API calls on mount
+onMounted(() => {
+  fetchUser();
+  fetchConcerns();
+  fetchRequisitioner();
 
     const loadCSS = (href) => {
         const link = document.createElement('link');

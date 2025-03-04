@@ -71,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:employee'])->prefix('employee')->name('employee.')->group(function () {
         Route::get('/dashboard', [EmployeeController::class, 'index'])->name('dashboard');
         Route::get('/EmployeeRequestWork', [EmployeeController::class, 'requestWork'])->name('employee.EmployeeRequestWork');
+        Route::get('/MyWorkOrderRequests', [EmployeeController::class, 'myrequestWork'])->name('employee.MyWorkOrderRequests');
+
     });
 
 

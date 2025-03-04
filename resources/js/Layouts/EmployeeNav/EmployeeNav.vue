@@ -71,8 +71,14 @@ function logout() {
                                 Equipment
                             </a> -->
                             <a class="nav-link" href="/employee/EmployeeRequestWork">
+                                <div class="nav-link-icon"><i data-feather="tool"></i></div>
+                                Request Work Order
+                            </a>
+                            <div class="sidenav-menu-heading"></div>
+
+                            <a class="nav-link" href="/employee/MyWorkOrderRequests">
                                 <div class="nav-link-icon"><i data-feather="clipboard"></i></div>
-                                Work Order
+                                My Work Order Requests
                             </a>
                             <div class="sidenav-menu-heading"></div>
                             <!-- <a class="nav-link" href="/profile">
