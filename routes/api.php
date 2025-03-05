@@ -47,3 +47,17 @@ Route::get('/concerns', [ConcernController::class, 'index']);
 Route::get('/wrequisitioner', [RequisitionerController::class, 'index']);
 Route::post('/submit-work-order', [WorkOrderController::class, 'store']);
 Route::get('/my-work-orders', [WorkOrderController::class, 'show']);
+
+// Admin routes for work orders (ensure your 'role:admin' middleware is set up correctly)
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    // Get all work orders for admin
+    Route::get('/admin-work-orders', [WorkOrderController::class, 'index']);
+    
+    // Update a specific work order's status
+    Route::patch('/work-orders/{id}', [WorkOrderController::class, 'update']);
+
+    Route::get('/admin-work-order-counts', [WorkOrderController::class, 'getWorkOrderCounts']);
+
+    // Endpoint for fetching today's work orders
+    Route::get('/todays-work-orders', [WorkOrderController::class, 'getTodaysWorkOrders']);
+});

@@ -33,5 +33,9 @@ class AdminController extends Controller
 // {
 //     return Inertia::render('admin/AdminEquipmentList');
 // }
+    public function adworkorderlist(): Response
+    {
+        return Inertia::render('admin/AdminWorkOrderList');     
+    }
 
 }

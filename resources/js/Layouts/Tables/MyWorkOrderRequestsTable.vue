@@ -112,7 +112,12 @@ onMounted(() => {
                     <!-- Main page content-->
                     <div class="container mt-n10">
                         <div class="card mb-4">
-                            <div class="card-header">My Work Orders</div>
+                            <div class="card-header">My Work Orders
+                                <div class="d-flex justify-content-end">
+                                    <a href="/employee/EmployeeRequestWork" class="btn btn-primary">Submit a Workorder +</a>
+                                </div>
+
+                            </div>
                             <div class="card-body">
                                 <div class="datatable">
                                     <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
@@ -156,7 +161,7 @@ onMounted(() => {
                                                 <td>{{ order.date_requested }}</td>
                                                 <td>
                                                     <span v-if="order.status === 'Submitted'" class="badge badge-primary">Submitted</span>
-                                                    <span v-else-if="order.status === 'Received'" class="badge badge-info">Received</span>
+                                                    <span v-else-if="order.status === 'Received'" class="badge badge-info">In-progress</span>
                                                     <span v-else-if="order.status === 'Completed'" class="badge badge-success">Completed</span>
                                                     <span v-else-if="order.status === 'Canceled'" class="badge badge-danger">Canceled</span>
                                                 </td>

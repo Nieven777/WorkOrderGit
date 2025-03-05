@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\WorkOrder;
+use Carbon\Carbon;
 
 class WorkOrderController extends Controller
 {
@@ -62,6 +63,32 @@ class WorkOrderController extends Controller
         return response()->json(['message' => 'Work order submitted successfully'], 201);
     }
 
+        // For admin: Retrieve all work orders sorted by created_at (newest first)
+        public function index(Request $request)
+        {
+            $workOrders = WorkOrder::orderBy('created_at', 'desc')->get();
+            return response()->json($workOrders, 200);
+        }
+    
+        // Update a work order's status (for admin)
+        public function update(Request $request, $id)
+        {
+            // Validate that a valid status is provided
+            $request->validate([
+                'status' => 'required|in:Submitted,Received,Completed,Canceled'
+            ]);
+    
+            $workOrder = WorkOrder::findOrFail($id);
+            $workOrder->status = $request->input('status');
+            $workOrder->save();
+    
+            return response()->json([
+                'message' => 'Status updated successfully',
+                'workOrder' => $workOrder
+            ], 200);
+        }
+    
+
     public function show(Request $request)
     {
         // Retrieve the authenticated user
@@ -72,4 +99,40 @@ class WorkOrderController extends Controller
 
         return response()->json($workOrders, 200);
     }
+
+    public function getWorkOrderCounts(Request $request)
+    {
+        // Count total work orders
+        $total = WorkOrder::count();
+
+        // Count in-progress orders (Submitted or Received)
+        $inProgress = WorkOrder::whereIn('status', ['Submitted', 'Received'])->count();
+
+        // Count completed work orders
+        $completed = WorkOrder::where('status', 'Completed')->count();
+
+        // Count cancelled work orders
+        $cancelled = WorkOrder::where('status', 'Canceled')->count();
+
+        return response()->json([
+            'total'      => $total,
+            'inProgress' => $inProgress,
+            'completed'  => $completed,
+            'cancelled'  => $cancelled,
+        ], 200);
+    }
+
+        // Fetch today's work orders
+        public function getTodaysWorkOrders(Request $request)
+        {
+            // Use Carbon to get today's date
+            $today = Carbon::today();
+    
+            // Retrieve work orders where created_at is today, ordered descending (latest first)
+            $orders = WorkOrder::whereDate('created_at', $today)
+                               ->orderBy('created_at', 'desc')
+                               ->get();
+    
+            return response()->json($orders, 200);
+        }
 }

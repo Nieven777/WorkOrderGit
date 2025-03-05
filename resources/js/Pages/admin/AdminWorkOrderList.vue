@@ -1,7 +1,7 @@
 <script setup>
-import AdminWorkOrderTable from '@/Layouts/Tables/AdminWorkOrderTable.vue';
+import AdminWorkOrdersTable from '@/Layouts/Tables/AdminWorkOrdersTable.vue';
 </script>
 <template>
-    <AdminWorkOrderTable />
+    <AdminWorkOrdersTable />
 
 </template>

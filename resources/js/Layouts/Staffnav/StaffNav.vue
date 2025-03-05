@@ -13,7 +13,7 @@ function logout() {
 <template>
     <body class="nav-fixed">
         <nav class="topnav navbar navbar-expand shadow justify-content-between navbar-light bg-white" id="sidenavAccordion">
-            <a class="navbar-brand" href="/home">ADMIN</a>
+            <a class="navbar-brand" href="/home">STAFF</a>
             <button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 mr-lg-2" id="sidebarToggle">
                 <i data-feather="menu"></i>
             </button>
@@ -28,14 +28,14 @@ function logout() {
             <ul class="align-items-center ml-auto">
                 <li class="nav-item dropdown no-caret mr-3 mr-lg-0 dropdown-user">
                     <a class="btn btn-icon btn-transparent-dark dropdown-toggle" id="navbarDropdownUserImage" href="javascript:void(0);" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img class="img-fluid" src="/assets/img/illustrations/profiles/profile-1.png" />
+                        <img class="img-fluid" src="/assets/img/illustrations/profiles/profile-2.png" />
                     </a>
                     <div class="dropdown-menu dropdown-menu-right border-0 shadow animated--fade-in-up" aria-labelledby="navbarDropdownUserImage">
                         <h6 class="dropdown-header d-flex align-items-center">
-                            <img class="dropdown-user-img" src="/assets/img/illustrations/profiles/profile-1.png" />
+                            <img class="dropdown-user-img" src="/assets/img/illustrations/profiles/profile-2.png" />
                             <div class="dropdown-user-details">
-                                <div class="dropdown-user-details-name">Name here</div>
-                                <div class="dropdown-user-details-email">email here</div>
+                                <div class="dropdown-user-details-name">Staff</div>
+                                <div class="dropdown-user-details-email">staff@email.com</div>
                             </div>
                         </h6>
                         <div class="dropdown-divider"></div>
@@ -48,10 +48,10 @@ function logout() {
                             Logout
                         </a> 
                     </div>
-                </li> 
+                </li>
             </ul>
         </nav>
-        <div id="layoutSidenav">
+        <div id="layoutSidenav"> 
             <div id="layoutSidenav_nav">
                 <nav class="sidenav shadow-right sidenav-light">
                     <div class="sidenav-menu">
@@ -61,28 +61,36 @@ function logout() {
                                 <div class="nav-link-icon"><i data-feather="activity"></i></div>
                                 Dashboard
                             </a>
-                            <a class="nav-link" href="/admin/adminuserlist">
+                            <div class="sidenav-menu-heading"></div>
+                            <!-- <a class="nav-link" href="/admin/adminuserlist">
                                 <div class="nav-link-icon"><i data-feather="users"></i></div>
                                 Users
-                            </a>
-                            <a class="nav-link" href="/admin/AdminEquipmentList">
+                            </a> -->
+                            <!-- <a class="nav-link" href="/admin/AdminEquipmentList">
                                 <div class="nav-link-icon"><i data-feather="tool"></i></div>
                                 Equipment
-                            </a>
-                            <a class="nav-link" href="/admin/AdminWorkOrderList">
+                            </a> -->
+                            <a class="nav-link" href="/employee/EmployeeRequestWork">
                                 <div class="nav-link-icon"><i data-feather="clipboard"></i></div>
                                 Work Orders
                             </a>
-                            <a class="nav-link" href="/profile">
-                                <div class="nav-link-icon"><i data-feather="user"></i></div>
-                                Profile
+                            <div class="sidenav-menu-heading"></div>
+
+                            <a class="nav-link" href="/employee/MyWorkOrderRequests">
+                                <div class="nav-link-icon"><i data-feather="tool"></i></div>
+                                My Work Order Requests
                             </a>
+                            <div class="sidenav-menu-heading"></div>
+                            <!-- <a class="nav-link" href="/profile">
+                                <div class="nav-link-icon"><i data-feather="user"></i></div>
+                                
+                            </a> -->
                         </div>
                     </div>
                     <div class="sidenav-footer">
                         <div class="sidenav-footer-content">
                             <div class="sidenav-footer-subtitle">Logged in as:</div>
-                            <div class="sidenav-footer-title">Admin</div>
+                            <div class="sidenav-footer-title">Staff</div>
                         </div>
                     </div>
                 </nav>

@@ -38,7 +38,7 @@ Route::middleware(['auth'])->group(function () {
     // Unified Role-Based Redirection
     Route::get('/dashboard', function () {
         return redirect(roleBasedRedirect(auth()->user()->role));
-    })->name('dashboard');
+    })->name('dashboard'); 
 
     Route::get('/home', function () {
         return redirect(roleBasedRedirect(auth()->user()->role));
@@ -51,7 +51,8 @@ Route::middleware(['auth'])->group(function () {
         // Admin Navigation Routes
         Route::get('/adminuserlist', [AdminController::class, 'show'])->name('admin.adminuserlist');
         Route::get('/AdminEquipmentList', [AdminController::class, 'equipmentlist'])->name('admin.AdminEquipmentList');
-        // Route::get('/adminuserlist', [AdminController::class, 'adminUserList']);
+        Route::get('/AdminWorkOrderList', [AdminController::class, 'adworkorderlist'])->name('admin.AdminWorkOrderList');
+   
         // Route::get('/AdminEquipmentList', [AdminController::class, 'adminEquipmentList']);
 
         //Admin Crud Routes

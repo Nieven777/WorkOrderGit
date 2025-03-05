@@ -4,6 +4,7 @@ import StaffDashboard from '@/Pages/StaffDashboard.vue';
 import EmployeeDashboard from '@/Pages/EmployeeDashboard.vue';
 import adminuserlist from '@/Pages/admin/adminuserlist.vue';
 import AdminEquipmentList from '@/Pages/admin/AdminEquipmentList.vue';
+import AdminWorkOrderList from './Pages/admin/AdminWorkOrderList.vue';
 import Login from '@/Pages/Auth/Login.vue';
 
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
   // ADMIN ROUTES HERE
   { path: '/admin/adminuserlist', component: adminuserlist, meta: { role: 'admin' } },
   { path: '/admin/AdminEquipmentList', component: AdminEquipmentList, meta: { role: 'admin' } },
+  { path: '/admin/AdminWorkOrderList', component: AdminWorkOrderList, meta: { role: 'admin' } },
 
 ];
 
