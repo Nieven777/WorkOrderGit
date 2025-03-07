@@ -61,18 +61,22 @@ function logout() {
                                 <div class="nav-link-icon"><i data-feather="activity"></i></div>
                                 Dashboard
                             </a>
-                            <a class="nav-link" href="/admin/adminuserlist">
-                                <div class="nav-link-icon"><i data-feather="users"></i></div>
-                                Users
-                            </a>
-                            <a class="nav-link" href="/admin/AdminEquipmentList">
-                                <div class="nav-link-icon"><i data-feather="tool"></i></div>
-                                Equipment
-                            </a>
+                            <div class="sidenav-menu-heading"></div>
                             <a class="nav-link" href="/admin/AdminWorkOrderList">
                                 <div class="nav-link-icon"><i data-feather="clipboard"></i></div>
                                 Work Orders
                             </a>
+                            <div class="sidenav-menu-heading"></div>
+                            <a class="nav-link" href="/admin/AdminEquipmentList">
+                                <div class="nav-link-icon"><i data-feather="tool"></i></div>
+                                Equipment
+                            </a>
+                            <div class="sidenav-menu-heading"></div>
+                            <a class="nav-link" href="/admin/adminuserlist">
+                                <div class="nav-link-icon"><i data-feather="users"></i></div>
+                                Users
+                            </a>
+                            <div class="sidenav-menu-heading"></div>
                             <a class="nav-link" href="/profile">
                                 <div class="nav-link-icon"><i data-feather="user"></i></div>
                                 Profile

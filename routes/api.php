@@ -43,7 +43,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return response()->json($request->user());
 });
 
-Route::get('/concerns', [ConcernController::class, 'index']);
+Route::get('/concerns', [ConcernController::class, 'index']); 
 Route::get('/wrequisitioner', [RequisitionerController::class, 'index']);
 Route::post('/submit-work-order', [WorkOrderController::class, 'store']);
 Route::get('/my-work-orders', [WorkOrderController::class, 'show']);

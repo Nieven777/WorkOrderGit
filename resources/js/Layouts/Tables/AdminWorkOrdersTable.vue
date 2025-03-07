@@ -6,9 +6,9 @@ import axios from 'axios';
 const workOrders = ref([]);
 
 // Toggle description display
-const toggleDescription = (order) => {
-  order.showFullDescription = !order.showFullDescription;
-};
+// const toggleDescription = (order) => {
+//   order.showFullDescription = !order.showFullDescription;
+// };
 
 // Toggle status edit dropdown for an order
 const toggleEditStatus = (order) => {
@@ -97,7 +97,7 @@ onMounted(() => {
             feather.replace(); // Apply icons after loading
         });
 
-        loadScript('/demo/datatables-demo.js');
+        loadScript('/demo/datatables-demo.js'); 
 
         // Load scripts.js after everything else
         loadScript('/js/scripts.js');
@@ -116,6 +116,7 @@ onMounted(() => {
          .catch(error => {
             console.error("Error fetching work orders:", error);
          });
+    
 });
 </script>
 
@@ -131,7 +132,7 @@ onMounted(() => {
                 <div class="row align-items-center justify-content-between">
                 </div>
               </div>
-            </div>
+            </div> 
           </header>
           <!-- Main content -->
           <div class="container mt-n10">
@@ -141,14 +142,14 @@ onMounted(() => {
               </div>
               <div class="card-body">
                 <div class="datatable">
-                  <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                  <table class="table table-bordered table-hover" id="dataTable" width="90% !important; margin: auto;" cellspacing="0">
                     <thead>
                       <tr>
                         <th>Ticket Number</th>
-                        <th>Requested By</th>
-                        <th>Requisitioner Type</th>
+                        <th>College/Unit</th>
+                        <th>Department</th>
                         <th>Concern</th>
-                        <th>Description</th>
+                        <!-- <th>Description</th> -->
                         <th>Date Requested</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -159,10 +160,10 @@ onMounted(() => {
                     <tbody>
                       <tr v-for="order in workOrders" :key="order.id">
                         <td>{{ order.ticket_number }}</td>
-                        <td>{{ order.requested_by }}</td>
-                        <td>{{ order.requisitioner_type }}</td>
+                        <td>{{ order.college }}</td>
+                        <td>{{ order.department }}</td>
                         <td>{{ order.concern }}</td>
-                        <td>
+                        <!-- <td>
                           <div>
                             <template v-if="!order.showFullDescription">
                               {{ order.description.length > 50 ? order.description.substring(0, 50) + '...' : order.description }}
@@ -176,7 +177,7 @@ onMounted(() => {
                               </button>
                             </span>
                           </div>
-                        </td>
+                        </td> -->
                         <td>{{ order.date_requested }}</td>
                         <td>
                           <!-- Status badge remains unchanged -->
@@ -187,8 +188,11 @@ onMounted(() => {
                         </td>
                         <td>
                           <!-- Action column: edit icon to toggle status dropdown -->
-                          <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" @click="toggleEditStatus(order)">
+                          <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" title="Edit status" @click="toggleEditStatus(order)">
                             <i data-feather="edit"></i>
+                          </button>
+                          <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" title="View" @click="toggleEditStatus(order)">
+                            <i data-feather="eye"></i>
                           </button>
                           <!-- Status dropdown appears when editStatus is true -->
                           <div v-if="order.editStatus" style="margin-top: 5px;">
