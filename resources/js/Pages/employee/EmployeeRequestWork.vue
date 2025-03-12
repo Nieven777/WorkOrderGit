@@ -3,6 +3,9 @@ import EmployeeNav from '@/Layouts/EmployeeNav/EmployeeNav.vue';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+const loading = ref(true); // Loading state
+
+
 // Reactive properties for form fields
 const requested_by = ref('');
 const selectedRtype = ref('');
@@ -77,7 +80,7 @@ const validateForm = () => {
   }
   if (selectedRtype.value === 'other' && !otherRtype.value.trim()) {
     errors.value.otherRtype = "Please specify the other type";
-  }
+  } 
   if (!selectedConcern.value) {
     errors.value.selectedConcern = "Concern is required";
   }
@@ -178,55 +181,74 @@ const initializeDataTable = () => {
     }
 };
 
-onMounted(() => {
-  fetchUser();
-  fetchConcerns();
-  fetchRequisitioner();
+onMounted(async () => {
+  try {
+    // Start loading
+    loading.value = true;
 
+    // Run all fetch requests concurrently
+    await Promise.all([
+      fetchUser(),
+      fetchConcerns(),
+      fetchRequisitioner()
+    ]);
+
+    // Stop loading after all calls succeed
+    loading.value = false;
+  } catch (error) {
+    console.error("Error during initialization:", error);
+    loading.value = false; // Ensure loading stops even if an error occurs
+  }
+
+  // Load assets (CSS and JS files)
   const loadCSS = (href) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      document.head.appendChild(link);
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
   };
 
   const loadScript = (src, callback) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.defer = true;
-      script.onload = callback || null;
-      document.body.appendChild(script);
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    script.onload = callback || null;
+    document.body.appendChild(script);
   };
 
   // Load CSS files
   loadCSS('/css/styles.css');
   loadCSS('/css/dataTables.bootstrap4.min.css');
 
-  // Load JS files in proper order (jQuery must load first)
+  // Load JS files
   loadScript('/js/jquery-3.5.1.min.js', () => {
-      console.log("✅ jQuery loaded");
-      loadScript('/js/bootstrap.bundle.min.js');
-      loadScript('/js/jquery.dataTables.min.js', () => {
-          console.log("✅ DataTables loaded");
-          loadScript('/js/dataTables.bootstrap4.min.js', () => {
-              console.log("✅ DataTables Bootstrap loaded");
-              initializeDataTable(); // Initialize after loading
-          });
+    console.log("✅ jQuery loaded");
+    loadScript('/js/bootstrap.bundle.min.js');
+    loadScript('/js/jquery.dataTables.min.js', () => {
+      console.log("✅ DataTables loaded");
+      loadScript('/js/dataTables.bootstrap4.min.js', () => {
+        console.log("✅ DataTables Bootstrap loaded");
+        initializeDataTable();
       });
-      loadScript('/js/all.min.js');
-      loadScript('/js/feather.min.js', () => {
-          console.log("✅ Feather icons loaded");
-          feather.replace();
-      });
-      loadScript('/demo/datatables-demo.js');
-      loadScript('/js/scripts.js');
+    });
+    loadScript('/js/all.min.js');
+    loadScript('/js/feather.min.js', () => {
+      console.log("✅ Feather icons loaded");
+      feather.replace();
+    });
+    loadScript('/demo/datatables-demo.js');
+    loadScript('/js/scripts.js');
   });
 });
+
 </script>
 
 <template>
   <body class="nav-fixed">
     <EmployeeNav />
+    <div v-if="loading" class="loading-screen">
+                        <div class="spinner"></div>
+                    </div>
     <div id="layoutSidenav" style="width: 95%;">
       <div id="layoutSidenav_content">
         <main>
@@ -241,7 +263,7 @@ onMounted(() => {
           </header>
 
           <!-- Main page content -->
-          <div class="container mt-n10">
+          <div class="container mt-n10" v-if="!loading">
             <!-- User Details Card -->
             <div class="row">
               <div class="col-lg-12">
@@ -287,7 +309,7 @@ onMounted(() => {
                         </div>
                         <div class="form-group col-md-6">
                           <label class="small mb-1">Department</label>
-                          <input class="form-control" type="text" v-model="user.department" disabled />
+                          <input class="form-control" type="text" v-model="user.department"  />
                         </div>
                       </div>
                     </form>
@@ -391,3 +413,32 @@ onMounted(() => {
     </div>
   </body>
 </template>
+<!-- Loading Screen Styling -->
+<style scoped>
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ccc;
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>

@@ -3,10 +3,8 @@ import EmployeeNav from '@/Layouts/EmployeeNav/EmployeeNav.vue';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
-const workOrders = ref([]); 
-const toggleDescription = (order) => {
-  order.showFullDescription = !order.showFullDescription;
-};
+const workOrders = ref([]);
+const loading = ref(true); // Loading state
 
 const initializeDataTable = () => {
     if (!window.jQuery || !$.fn.DataTable) {
@@ -19,7 +17,7 @@ const initializeDataTable = () => {
             destroy: true,
             responsive: true,
             autoWidth: false,
-            order: [[8, 'desc']], // Order by the hidden created_at column (index 8)
+            order: [[8, 'desc']],
         });
         console.log("✅ DataTables initialized");
     }
@@ -62,14 +60,11 @@ onMounted(() => {
 
             loadScript('/js/dataTables.bootstrap4.min.js', () => {
                 console.log("✅ DataTables Bootstrap loaded");
-                initializeDataTable(); // Initialize after loading
+                initializeDataTable();
             });
         });
 
-        // Load other scripts
         loadScript('/js/all.min.js');
-
-        // Load Feather icons last
         loadScript('/js/feather.min.js', () => {
             console.log("✅ Feather icons loaded");
             feather.replace();
@@ -81,18 +76,20 @@ onMounted(() => {
 
     // Fetch current user's work orders
     axios.get('/api/my-work-orders')
-         .then(response => {
+        .then(response => {
             workOrders.value = response.data.map(order => ({
                 ...order,
                 showFullDescription: false
             }));
-         })
-         .catch(error => {
+        })
+        .catch(error => {
             console.error("Error fetching work orders:", error);
-         });
+        })
+        .finally(() => {
+            loading.value = false; // Hide loading screen once data is loaded
+        });
 });
 </script>
-
 
 <template>
     <body class="nav-fixed">
@@ -100,23 +97,29 @@ onMounted(() => {
         <div id="layoutSidenav">
             <div id="layoutSidenav_content">
                 <main>
+                    <!-- Loading Screen -->
+                    <div v-if="loading" class="loading-screen">
+                        <div class="spinner"></div>
+                    </div>
+
                     <header class="pb-10">
                         <div class="container">
                             <div class="page-header-content pt-4">
-                                <div class="row align-items-center justify-content-between">
-
-                                </div>
+                                <div class="row align-items-center justify-content-between"></div>
                             </div>
                         </div>
                     </header>
-                    <!-- Main page content-->
-                    <div class="container mt-n10">
+                    
+                    <!-- Main page content -->
+                    <div class="container mt-n10" v-if="!loading">
                         <div class="card mb-4">
-                            <div class="card-header">My Work Orders
+                            <div class="card-header">
+                                My Work Orders
                                 <div class="d-flex justify-content-end">
-                                    <a href="/employee/EmployeeRequestWork" class="btn btn-primary">Submit a Workorder +</a>
+                                    <a href="/employee/EmployeeRequestWork" class="btn btn-primary">
+                                        Submit a Workorder +
+                                    </a>
                                 </div>
-
                             </div>
                             <div class="card-body">
                                 <div class="datatable">
@@ -124,40 +127,21 @@ onMounted(() => {
                                         <thead>
                                             <tr>
                                                 <th>Ticket Number</th>
-                                                <th>Requested By</th>
+                                                <th>Department</th>
                                                 <th>Requisitioner Type</th>
                                                 <th>Concern</th>
-                                                <th>Description</th>
                                                 <th>Date Requested</th>
                                                 <th>Status</th>
                                                 <th>Actions</th>
-                                                <!-- Hidden column for sorting -->
                                                 <th style="display:none;">Created At</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-for="order in workOrders" :key="order.id">
                                                 <td>{{ order.ticket_number }}</td>
-                                                <td>{{ order.requested_by }}</td>
+                                                <td>{{ order.department }}</td>
                                                 <td>{{ order.requisitioner_type }}</td>
                                                 <td>{{ order.concern }}</td>
-                                                <td>
-                                                    <div>
-                                                        <span>
-                                                            <template v-if="!order.showFullDescription">
-                                                                {{ order.description.length > 20 ? order.description.substring(0, 20) + '...' : order.description }}
-                                                            </template>
-                                                            <template v-else>
-                                                                {{ order.description }}
-                                                            </template>
-                                                        </span>
-                                                        <span v-if="order.description.length > 20">
-                                                            <button class="btn btn-link btn-sm" @click="toggleDescription(order)">
-                                                                {{ order.showFullDescription ? 'Show Less' : 'Show More' }}
-                                                            </button>
-                                                        </span>
-                                                    </div>
-                                                </td>
                                                 <td>{{ order.date_requested }}</td>
                                                 <td>
                                                     <span v-if="order.status === 'Submitted'" class="badge badge-primary">Submitted</span>
@@ -169,9 +153,7 @@ onMounted(() => {
                                                     <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2">
                                                         <i data-feather="eye"></i>
                                                     </button>
-                                                    <!-- Additional actions can be added here -->
                                                 </td>
-                                                <!-- Hidden created_at column for sorting -->
                                                 <td style="display:none;">{{ order.created_at }}</td>
                                             </tr>
                                             <tr v-if="workOrders.length === 0">
@@ -188,3 +170,33 @@ onMounted(() => {
         </div>
     </body>
 </template>
+
+<!-- Loading Screen Styling -->
+<style scoped>
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ccc;
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>

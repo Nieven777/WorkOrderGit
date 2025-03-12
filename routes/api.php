@@ -8,7 +8,7 @@ use App\Http\Controllers\CollegeDepartmentController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ConcernController;
 use App\Http\Controllers\WorkOrderController;
-
+use App\Http\Controllers\DepartmentController;
 
 
 
@@ -47,6 +47,9 @@ Route::get('/concerns', [ConcernController::class, 'index']);
 Route::get('/wrequisitioner', [RequisitionerController::class, 'index']);
 Route::post('/submit-work-order', [WorkOrderController::class, 'store']);
 Route::get('/my-work-orders', [WorkOrderController::class, 'show']);
+Route::middleware('auth:sanctum')->get('/user-and-departments', [DepartmentController::class, 'getUserAndDepartments']);
+
+
 
 // Admin routes for work orders (ensure your 'role:admin' middleware is set up correctly)
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
