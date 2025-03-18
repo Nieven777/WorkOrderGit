@@ -11,6 +11,7 @@ const cancelledOrders = ref(0);
 
 // Reactive variable for today's work orders
 const todaysOrders = ref([]);
+const loading = ref(true); // ✅ Loading state
 
 // Fetch summary counts from the API
 const fetchCounts = () => {
@@ -33,102 +34,88 @@ const fetchTodaysOrders = () => {
       todaysOrders.value = response.data;
     })
     .catch(error => {
-      console.error('Error fetching today\'s work orders:', error);
+      console.error("Error fetching today's work orders:", error);
+    })
+    .finally(() => {
+      loading.value = false; // ✅ Disable loading state after data is fetched
     });
 };
-
 
 // DataTables initialization (if you need it for other tables)
 const initializeDataTable = () => {
-    if (!window.jQuery || !$.fn.DataTable) {
-        console.error("⚠️ jQuery or DataTables is not loaded yet.");
-        return;
-    }
-    if (!$.fn.DataTable.isDataTable('#dataTable')) {
-        $('#dataTable').DataTable({
-            destroy: true,
-            responsive: true,
-            autoWidth: false,
-            order: [[8, 'desc']], // Order by hidden created_at column
-        });
-        console.log("✅ DataTables initialized");
-    }
-    
-    if (window.feather) {
-        feather.replace();
-    } else {
-        console.error("⚠️ Feather icons library is not yet loaded.");
-    }
+  if (!window.jQuery || !$.fn.DataTable) {
+    console.error("⚠️ jQuery or DataTables is not loaded yet.");
+    return;
+  }
+  if (!$.fn.DataTable.isDataTable('#dataTable')) {
+    $('#dataTable').DataTable({
+      destroy: true,
+      responsive: true,
+      autoWidth: false,
+      order: [[4, 'desc']], // ✅ Order by the hidden created_at column (index 4)
+    });
+    console.log("✅ DataTables initialized");
+  }
+  
+  if (window.feather) {
+    feather.replace();
+  } else {
+    console.error("⚠️ Feather icons library is not yet loaded.");
+  }
 };
 
 onMounted(() => {
-    // Functions to dynamically load CSS and JS
-    const loadCSS = (href) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = href;
-        document.head.appendChild(link);
-    };
+  // Functions to dynamically load CSS and JS
+  const loadCSS = (href) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  };
 
-    const loadScript = (src, callback) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.defer = true;
-        script.onload = callback || null;
-        document.body.appendChild(script);
-    }; 
+  const loadScript = (src, callback) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    script.onload = callback || null;
+    document.body.appendChild(script);
+  };
 
-    // Load CSS first
-    loadCSS('/css/styles.css');
-    loadCSS('/css/dataTables.bootstrap4.min.css');
+  // ✅ Load CSS first
+  loadCSS('/css/styles.css');
+  loadCSS('/css/dataTables.bootstrap4.min.css');
 
-    // Load jQuery first
-    loadScript('/js/jquery-3.5.1.min.js', () => {
-        console.log("✅ jQuery loaded");
+  // ✅ Load jQuery first
+  loadScript('/js/jquery-3.5.1.min.js', () => {
+    console.log("✅ jQuery loaded");
 
-        // Load Bootstrap and DataTables after jQuery
-        loadScript('/js/bootstrap.bundle.min.js');
-        loadScript('/js/jquery.dataTables.min.js', () => {
-            console.log("✅ DataTables loaded");
+    // ✅ Load Bootstrap and DataTables after jQuery
+    loadScript('/js/bootstrap.bundle.min.js');
+    loadScript('/js/jquery.dataTables.min.js', () => {
+      console.log("✅ DataTables loaded");
 
-            loadScript('/js/dataTables.bootstrap4.min.js', () => {
-                console.log("✅ DataTables Bootstrap loaded");
-                initializeDataTable(); // Initialize after loading
-            });
-        });
-
-        // Load other scripts
-        loadScript('/js/all.min.js');
-
-        // Load Feather icons last
-        loadScript('/js/feather.min.js', () => {
-            console.log("✅ Feather icons loaded");
-            feather.replace(); // Apply icons after loading
-        });
-
-        loadScript('/demo/datatables-demo.js');
-
-        // Load scripts.js after everything else
-        loadScript('/js/scripts.js');
+      loadScript('/js/dataTables.bootstrap4.min.js', () => {
+        console.log("✅ DataTables Bootstrap loaded");
+        initializeDataTable(); // ✅ Initialize after loading
+      });
     });
 
-    // Fetch all work orders for admin
-    axios.get('/api/admin-work-orders')
-         .then(response => {
-            // Enhance each work order with properties to control description and edit dropdown
-            workOrders.value = response.data.map(order => ({
-                ...order,
-                showFullDescription: false,
-                editStatus: false
-            }));
-         })
-         .catch(error => {
-            console.error("Error fetching work orders:", error);
-         });
+    // ✅ Load other scripts
+    loadScript('/js/all.min.js');
 
-    // Fetch dynamic dashboard data
-    fetchCounts();
-    fetchTodaysOrders();
+    // ✅ Load Feather icons last
+    loadScript('/js/feather.min.js', () => {
+      console.log("✅ Feather icons loaded");
+      feather.replace(); // ✅ Apply icons after loading
+    });
+
+    loadScript('/demo/datatables-demo.js');
+    loadScript('/js/scripts.js');
+  });
+
+  // ✅ Fetch dynamic dashboard data
+  fetchCounts();
+  fetchTodaysOrders();
 });
 </script>
 
@@ -156,73 +143,58 @@ onMounted(() => {
             </div>
           </header>
 
+          <!-- ✅ Loading screen -->
+          <div v-if="loading" class="loading-screen">
+            <div class="spinner"></div>
+          </div>
+
           <!-- Summary Cards -->
-          <div class="container mt-n10">
+          <div class="container mt-n10" v-if="!loading">
             <div class="row">
-              <!-- Total Work Orders Card -->
+              <!-- Total Work Orders -->
               <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-primary" style="border-left-width: 6px;">
-                  <div class="card-body d-flex justify-content-center flex-column">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="mr-3">
-                        <i class="feather-xl text-primary mb-3"></i>
-                        <h5>Total Work Orders</h5>
-                        <h3>{{ totalOrders }}</h3>
-                      </div> 
-                    </div>
+                <div class="card lift h-100 border-left-primary thick-border">
+                  <div class="card-body">
+                    <h5>Total Work Orders</h5>
+                    <h3>{{ totalOrders }}</h3>
                   </div>
                 </div>
               </div>
-              <!-- In-progress Card -->
+              <!-- In-progress Orders -->
               <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-secondary" style="border-left-width: 6px;">
-                  <div class="card-body d-flex justify-content-center flex-column">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="mr-3">
-                        <i class="feather-xl text-secondary mb-3"></i>
-                        <h5>In-progress</h5>
-                        <h3>{{ inProgressOrders }}</h3>
-                      </div>
-                    </div>
+                <div class="card lift h-100 border-left-secondary thick-border">
+                  <div class="card-body">
+                    <h5>In-progress</h5>
+                    <h3>{{ inProgressOrders }}</h3>
                   </div>
                 </div>
               </div>
-              <!-- Completed Card -->
+              <!-- Completed Orders -->
               <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-success" style="border-left-width: 6px;">
-                  <div class="card-body d-flex justify-content-center flex-column">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="mr-3">
-                        <i class="feather-xl text-success mb-3"></i>
-                        <h5>Completed</h5>
-                        <h3>{{ completedOrders }}</h3>
-                      </div>
-                    </div>
+                <div class="card lift h-100 border-left-success thick-border">
+                  <div class="card-body">
+                    <h5>Completed</h5>
+                    <h3>{{ completedOrders }}</h3>
                   </div>
                 </div>
               </div>
-              <!-- Cancelled Card -->
+              <!-- Cancelled Orders -->
               <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-danger" style="border-left-width: 6px;">
-                  <div class="card-body d-flex justify-content-center flex-column">
-                    <div class="d-flex align-items-center justify-content-between">
-                      <div class="mr-3">
-                        <i class="feather-xl text-danger mb-3"></i>
-                        <h5>Cancelled</h5>
-                        <h3>{{ cancelledOrders }}</h3>
-                      </div>
-                    </div>
+                <div class="card lift h-100 border-left-danger thick-border">
+                  <div class="card-body">
+                    <h5>Cancelled</h5>
+                    <h3>{{ cancelledOrders }}</h3>
                   </div>
                 </div>
-              </div>                            
+              </div>
             </div>
 
-            <!-- Latest Work Orders Today -->
+            <!-- Latest Work Orders -->
             <div class="card mb-4">
               <div class="card-header">Latest Work Orders Today</div>
               <div class="card-body">
                 <div class="datatable table-responsive">
-                  <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                  <table class="table table-bordered table-hover" id="dataTable" cellspacing="0">
                     <thead>
                       <tr>
                         <th>Ticket Number</th>
@@ -241,10 +213,7 @@ onMounted(() => {
                         <td>{{ order.concern }}</td>
                         <td>{{ order.date_requested }}</td>
                         <td>
-                          <span v-if="order.status === 'Submitted'" class="badge badge-primary">Submitted</span>
-                          <span v-else-if="order.status === 'Received'" class="badge badge-info">Received</span>
-                          <span v-else-if="order.status === 'Completed'" class="badge badge-success">Completed</span>
-                          <span v-else-if="order.status === 'Canceled'" class="badge badge-danger">Canceled</span>
+                          <span :class="`badge badge-${order.status.toLowerCase()}`">{{ order.status }}</span>
                         </td>
                       </tr>
                       <tr v-if="todaysOrders.length === 0">
@@ -261,3 +230,30 @@ onMounted(() => {
     </div>
   </body>
 </template>
+
+<style>
+/* ✅ Loading screen styling */
+.loading-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.spinner {
+  border: 4px solid #ccc;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ✅ Thicker Border */
+.thick-border {
+  border-left-width: 7px !important;
+}
+</style>

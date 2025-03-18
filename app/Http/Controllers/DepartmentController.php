@@ -4,17 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\CDepartment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DepartmentController extends Controller
 {
-    public function getDepartmentsByCollege(Request $request)
+    public function getDepartmentsByCollege($collegeId)
     {
-        $collegeUnitCode = $request->input('college_unit_code');
-        
-        $departments = CDepartment::where('college', $collegeUnitCode)->get();
-        
+        $departments = CDepartment::where('college_id', $collegeId)->get();
         return response()->json($departments);
     }
+    
 
     public function getUserAndDepartments()
 {

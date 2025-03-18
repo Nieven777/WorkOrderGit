@@ -9,18 +9,22 @@ class College extends Model
 {
     use HasFactory;
 
-    protected $table = 'colleges'; // Your table name
+    protected $table = 'colleges'; // Make sure this matches the table name
+    protected $primaryKey = 'c_u_id'; // Set primary key
+    public $timestamps = false; // Disable timestamps if they are not used
 
     protected $fillable = [
-        'college_unit_code',
-        'college_name'
+        'college_unit', 
+        'college_unit_code', 
+        'dep_chair', 
+        'dep_chair_id', 
+        'created_on', 
+        'recieve_concern'
     ];
 
-    /**
-     * Relationship with Department
-     */
+    // Relationship to Department model
     public function departments()
     {
-        return $this->hasMany(CDepartment::class, 'college', 'college_unit_code');
+        return $this->hasMany(CDepartment::class, 'college_id', 'c_u_id');
     }
 }

@@ -49,28 +49,35 @@ const closeModal = () => {
 
 // Initialize DataTable
 const initializeDataTable = () => {
-    if (!window.jQuery || !$.fn.DataTable) {
-        console.error("⚠️ jQuery or DataTables is not loaded yet.");
-        return;
-    }
+  if (!window.jQuery || !$.fn.DataTable) {
+    console.error("⚠️ jQuery or DataTables is not loaded yet.");
+    return;
+  }
 
-    // Check if DataTable is already initialized to prevent duplicate initialization
-    if (!$.fn.DataTable.isDataTable('#dataTable')) {
-        $('#dataTable').DataTable({
-            destroy: true, // Ensure it resets properly
-            responsive: true,
-            autoWidth: false,
-        });
-        console.log("✅ DataTables initialized");
+  if ($.fn.DataTable.isDataTable('#dataTable')) {
+    $('#dataTable').DataTable().destroy(); // Destroy existing table
+  }
+
+  $('#dataTable').DataTable({
+    responsive: true,
+    autoWidth: false,
+    destroy: true, // Reset on reload
+    order: [[1, 'asc']], // Default order by User column
+    rowCallback: function(row, data, index) {
+      // Automatically generate row numbers based on DataTable state
+      $('td:eq(0)', row).html(index + 1);
     }
-    
-    // Ensure feather icons are applied after DataTable loads
-    if (window.feather) {
-        feather.replace();
-    } else {
-        console.error("⚠️ Feather icons library is not yet loaded.");
-    }
+  });
+
+  console.log("✅ DataTables initialized");
+
+  if (window.feather) {
+    feather.replace();
+  } else {
+    console.error("⚠️ Feather icons library is not yet loaded.");
+  }
 };
+
 
 
 
@@ -78,7 +85,7 @@ const initializeDataTable = () => {
 
 // Load users on component mount
 onMounted(() => {
-    fetchUsers();
+    fetchUsers(); 
 
     const loadCSS = (href) => {
         const link = document.createElement('link');
@@ -112,7 +119,7 @@ onMounted(() => {
                 console.log("✅ DataTables Bootstrap loaded");
                 initializeDataTable(); // Initialize after loading
             });
-        });
+        }); 
 
         // Load other scripts
         loadScript('/js/all.min.js');
@@ -162,6 +169,7 @@ onMounted(() => {
                   <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                       <tr>
+                        <th>No.</th> <!-- New Column for Row Number -->
                         <th>User</th>
                         <th>ID No.</th>
                         <th>Role</th>
@@ -173,6 +181,7 @@ onMounted(() => {
                     </thead>
                     <tbody>
                       <tr v-for="user in users" :key="user.id">
+                        <td></td> <!-- Empty cell for row number -->
                         <td>{{ user.first_name }} {{ user.middle_name }} {{ user.last_name }}</td>
                         <td>{{ user.user_id }}</td>
                         <td>{{ user.role }}</td>
@@ -180,17 +189,20 @@ onMounted(() => {
                         <td>{{ user.department }}</td>
                         <td>{{ user.email }}</td>
                         <td>
-                          <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" title="edit" @click="openEditUserModal(user)">
+                          <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"
+                                  title="edit"
+                                  @click="openEditUserModal(user)">
                             <i data-feather="edit"></i>
                           </button>
-                            
-                          <button class="btn btn-datatable btn-icon btn-transparent-dark" title="delete" @click="deleteUser(user.id)">
-                          <i data-feather="trash-2"></i>
+                          <button class="btn btn-datatable btn-icon btn-transparent-dark"
+                                  title="delete"
+                                  @click="deleteUser(user.id)">
+                            <i data-feather="trash-2"></i>
                           </button>
                         </td>
-
                       </tr>
                     </tbody>
+
                   </table>
                 </div>
               </div>

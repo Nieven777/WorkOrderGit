@@ -38,4 +38,9 @@ class AdminController extends Controller
         return Inertia::render('admin/AdminWorkOrderList');     
     }
 
+    public function addworkorder(): Response
+    {
+        return Inertia::render('admin/AdminRequestWork');
+    }
+
 }

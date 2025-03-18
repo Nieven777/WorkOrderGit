@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\WorkOrder;
+use App\Mail\WorkOrderSubmitted;
+use App\Models\SubmittedWorkOrder;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
 class WorkOrderController extends Controller
@@ -22,6 +25,8 @@ class WorkOrderController extends Controller
             'date_requested'     => 'required|date',
             'description'        => 'required|string',
         ]);
+
+
 
         // Get the authenticated user and merge their ID into the request
         $user = auth()->user();

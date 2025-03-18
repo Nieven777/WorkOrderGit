@@ -48,6 +48,9 @@ Route::get('/wrequisitioner', [RequisitionerController::class, 'index']);
 Route::post('/submit-work-order', [WorkOrderController::class, 'store']);
 Route::get('/my-work-orders', [WorkOrderController::class, 'show']);
 Route::middleware('auth:sanctum')->get('/user-and-departments', [DepartmentController::class, 'getUserAndDepartments']);
+Route::get('/colleges/{collegeId}/departments', [DepartmentController::class, 'getDepartmentsByCollege']);
+
+
 
 
 

@@ -1,5 +1,5 @@
-<script setup>
-import EmployeeNav from '@/Layouts/EmployeeNav/EmployeeNav.vue';
+select<script setup>
+import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
@@ -13,11 +13,14 @@ const selectedConcern = ref('');
 const otherConcern = ref('');
 const description = ref('');
 const selectedDepartment = ref('');
+const selectedCollegeUnit = ref('');
 
 // Options for dropdowns
 const concerns = ref([]);
 const wrequisitioner = ref([]);
 const departments = ref([]);
+const collegeunit = ref([]);
+
 
 // User details and date
 const user = ref({
@@ -79,6 +82,17 @@ const fetchAllDepartments = async () => {
     console.error("Error fetching departments:", error);
   }
 };
+
+// Fetch College/Unit data
+const fetchCollegeUnit = async () => {
+  try {
+    const response = await axios.get('/api/colleges');
+    collegeunit.value = response.data;
+  } catch (error) {
+    console.error("Error fetching college unit:", error);
+  }
+};
+
 
 // Form validation
 const validateForm = () => {
@@ -155,7 +169,7 @@ const submitForm = () => {
     alert("Please fill in all required fields correctly.");
     return;
   }
-  modalVisible.value = true; 
+  modalVisible.value = true;
 };
 
 onMounted(async () => {
@@ -164,6 +178,7 @@ onMounted(async () => {
     fetchUser(),
     fetchConcerns(),
     fetchRequisitioner(),
+    fetchCollegeUnit()
   ]);
   loading.value = false;
 
@@ -211,7 +226,7 @@ onMounted(async () => {
 
 <template>
   <body class="nav-fixed">
-    <EmployeeNav />
+    <AdminNav />
     <div v-if="loading" class="loading-screen">
       <div class="spinner"></div>
     </div>
@@ -270,9 +285,17 @@ onMounted(async () => {
 
                       <div class="row">
                         <div class="form-group col-md-6">
-                          <label class="small mb-1">College/Unit</label>
-                          <input class="form-control" type="text" v-model="user.college" disabled />
-                        </div>
+                            <label for="college" class="form-label">College</label>
+                            <select v-model="selectedCollegeUnit" class="form-control">
+                                <option value="" disabled>Select College</option>
+                                <option v-for="college in collegeunit" 
+                                        :key="college.c_u_id" 
+                                        :value="college.c_u_id">
+                                {{ college.college_unit }}
+                                </option>
+                            </select>
+                            </div>
+
                         <!-- Department Dropdown (Temporary: All departments) -->
                         <div class="form-group col-md-6">
                           <label>Department</label>
@@ -287,7 +310,7 @@ onMounted(async () => {
                       </div>
                     </form>
                   </div>
-                </div>
+                </div>  
               </div>
             </div>
 

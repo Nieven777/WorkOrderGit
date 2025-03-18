@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CollegeDepartmentController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
@@ -41,7 +42,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard'); 
 
     Route::get('/home', function () {
-        return redirect(roleBasedRedirect(auth()->user()->role));
+        return redirect(roleBasedRedirect(auth()->user()->role)); 
     });
 
     // Admin Routes
@@ -52,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/adminuserlist', [AdminController::class, 'show'])->name('admin.adminuserlist');
         Route::get('/AdminEquipmentList', [AdminController::class, 'equipmentlist'])->name('admin.AdminEquipmentList');
         Route::get('/AdminWorkOrderList', [AdminController::class, 'adworkorderlist'])->name('admin.AdminWorkOrderList');
+        Route::get('/AdminRequestWork', [AdminController::class, 'addworkorder'])->name('admin.AdminRequestWork');
    
         // Route::get('/AdminEquipmentList', [AdminController::class, 'adminEquipmentList']);
 
@@ -59,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/register', [RegisteredUserController::class, 'register']);
         Route::get('/adminusertable', [UserController::class, 'index']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::get ('/collegeunit', [CollegeDepartmentController::class, 'getCollegeUnit']);
 
 
     });
@@ -73,6 +76,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [EmployeeController::class, 'index'])->name('dashboard');
         Route::get('/EmployeeRequestWork', [EmployeeController::class, 'requestWork'])->name('employee.EmployeeRequestWork');
         Route::get('/MyWorkOrderRequests', [EmployeeController::class, 'myrequestWork'])->name('employee.MyWorkOrderRequests');
+        Route::get('/colleges/{collegeCode}/departments', [CollegeDepartmentController::class, 'getDepartmentsByCollege']);
+
 
     });
 
