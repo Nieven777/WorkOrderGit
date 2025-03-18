@@ -1,9 +1,9 @@
 <script setup>
-import MyWorkOrderRequestsTable from '@/Layouts/Tables/MyWorkOrderRequestsTable.vue';
+import StaffWorkOrdersTable from '@/Layouts/Tables/StaffWorkOrdersTable.vue';
 </script>
 <template>
-    <MyWorkOrderRequestsTable />
-    
+    <StaffWorkOrdersTable />
+     
         
    
 </template>

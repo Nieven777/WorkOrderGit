@@ -56,7 +56,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/AdminRequestWork', [AdminController::class, 'addworkorder'])->name('admin.AdminRequestWork');
    
         // Route::get('/AdminEquipmentList', [AdminController::class, 'adminEquipmentList']);
-
+ 
         //Admin Crud Routes
         Route::post('/register', [RegisteredUserController::class, 'register']);
         Route::get('/adminusertable', [UserController::class, 'index']);
@@ -69,6 +69,8 @@ Route::middleware(['auth'])->group(function () {
     // Staff Routes
     Route::middleware(['role:staff'])->prefix('staff')->name('staff.')->group(function () {
         Route::get('/dashboard', [StaffController::class, 'index'])->name('dashboard');
+        Route::get('/StaffWorkOrderList', [StaffController::class, 'staffworkorderlist'])->name('admin.StaffWorkOrderList');
+
     }); 
 
     // Employee Routes

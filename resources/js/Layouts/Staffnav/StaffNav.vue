@@ -6,7 +6,7 @@ function logout() {
         onFinish: () => {
             router.visit('/login'); // Redirect to login page after logout
         }
-    });
+    }); 
 }
 </script>
 
@@ -70,22 +70,22 @@ function logout() {
                                 <div class="nav-link-icon"><i data-feather="tool"></i></div>
                                 Equipment
                             </a> -->
-                            <a class="nav-link" href="/employee/EmployeeRequestWork">
+                            <a class="nav-link" href="/staff/StaffWorkOrderList">
                                 <div class="nav-link-icon"><i data-feather="clipboard"></i></div>
                                 Work Orders
                             </a>
                             <div class="sidenav-menu-heading"></div>
 
-                            <a class="nav-link" href="/employee/MyWorkOrderRequests">
+                            <a class="nav-link" href="/staff/StaffMyWorkOrderRequests">
                                 <div class="nav-link-icon"><i data-feather="tool"></i></div>
-                                My Work Order Requests
+                                Received Work Orders
                             </a>
                             <div class="sidenav-menu-heading"></div>
                             <!-- <a class="nav-link" href="/profile">
                                 <div class="nav-link-icon"><i data-feather="user"></i></div>
                                 
                             </a> -->
-                        </div>
+                        </div> 
                     </div>
                     <div class="sidenav-footer">
                         <div class="sidenav-footer-content">

@@ -19,7 +19,7 @@ const updateStatus = (order) => {
     })
     .catch(error => {
       console.error("❌ Error updating status:", error);
-    });
+    }); 
 };
 
 // Initialize DataTables with ordering on the hidden created_at column
@@ -180,7 +180,7 @@ onMounted(() => {
                         <td>{{ order.date_requested }}</td>
                         <td>
                           <span v-if="order.status === 'Submitted'" class="badge badge-primary">Submitted</span>
-                          <span v-else-if="order.status === 'Received'" class="badge badge-info">In-progress</span>
+                          <span v-else-if="order.status === 'Received'" class="badge badge-info">Accepted</span>
                           <span v-else-if="order.status === 'Completed'" class="badge badge-success">Completed</span>
                           <span v-else-if="order.status === 'Canceled'" class="badge badge-danger">Canceled</span>
                         </td>
@@ -202,7 +202,7 @@ onMounted(() => {
                                     @change="updateStatus(order)" 
                                     class="form-control">
                               <option value="Submitted">Submitted</option>
-                              <option value="Received">In-progress</option>
+                              <option value="Received">Accept</option>
                               <option value="Completed">Complete</option>
                               <option value="Canceled">Cancel</option>
                             </select>

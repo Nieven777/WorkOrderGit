@@ -67,3 +67,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Endpoint for fetching today's work orders
     Route::get('/todays-work-orders', [WorkOrderController::class, 'getTodaysWorkOrders']);
 });
+
+// Staff routes for work orders (ensure your 'role:staff' middleware is set up correctly)
+Route::middleware(['auth:sanctum', 'role:staff'])->group(function () {
+    // Get all work orders for staff
+    Route::get('/staff-work-orders', [WorkOrderController::class, 'index']);
+    
+    // Update a specific work order's status
+    Route::patch('/work-orders/{id}', [WorkOrderController::class, 'update']);
+});

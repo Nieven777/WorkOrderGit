@@ -13,7 +13,7 @@ class AdminController extends Controller
         return Inertia::render('AdminDashboard'); 
     }
 
-    public function show(): Response 
+    public function show(): Response  
     {
         //ADMIN Navigation Routes
         return Inertia::render('admin/adminuserlist');
