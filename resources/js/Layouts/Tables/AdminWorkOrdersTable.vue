@@ -2,71 +2,34 @@
 import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
+import WorkOrderModal from '@/Components/WorkOrderModal.vue'; // Adjust the path if necessary
+
+// Configure Axios to include credentials and CSRF token
+axios.defaults.withCredentials = true;
+const token = document.querySelector('meta[name="csrf-token"]');
+if (token) {
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
+}
 
 const workOrders = ref([]);
+const showModal = ref(false);
+const selectedOrder = ref(null);
 
-// Toggle status edit dropdown for an order
-const toggleEditStatus = (order) => {
-  order.editStatus = !order.editStatus;
-};
-
-// Update work order status dynamically
-const updateStatus = (order) => {
-  axios.patch(`/api/work-orders/${order.id}`, { status: order.status })
-    .then(response => {
-      console.log("✅ Status updated", response.data);
-      order.editStatus = false;
-    })
-    .catch(error => {
-      console.error("❌ Error updating status:", error);
-    }); 
-};
-
-// Initialize DataTables with ordering on the hidden created_at column
-const initializeDataTable = () => {
-  if (!window.jQuery || !$.fn.DataTable) {
-    console.error("⚠️ jQuery or DataTables is not loaded yet.");
-    return;
-  }
-
-  if ($.fn.DataTable.isDataTable('#dataTable')) {
-    $('#dataTable').DataTable().destroy();
-  }
-
-  $('#dataTable').DataTable({
-    responsive: true,
-    autoWidth: false,
-    order: [[7, 'desc']], // Order by hidden column at index 7
-    rowCallback: function(row, data, index) {
-      // Add row number dynamically
-      $('td:eq(0)', row).html(index + 1);
-    }
-  });
-
-  console.log("✅ DataTables initialized");
-
-  if (window.feather) {
-    feather.replace();
-  } else {
-    console.error("⚠️ Feather icons library is not yet loaded.");
-  }
-};
-
-
-// Fetch all work orders for admin
+// ------------------------------
+// Data Fetching & DataTable Setup
+// ------------------------------
 const fetchWorkOrders = async () => {
   try {
     const response = await axios.get('/api/admin-work-orders');
     workOrders.value = response.data.map(order => ({
       ...order,
       showFullDescription: false,
-      editStatus: false,
+      completed_description: order.completed_description || '',
+      category: order.category || 'N/A'
     }));
-
-    // Initialize DataTable after data is rendered
     nextTick(() => {
       setTimeout(() => {
-        initializeDataTable(); // Add slight delay for DOM sync
+        initializeDataTable();
       }, 100);
     });
   } catch (error) {
@@ -74,8 +37,106 @@ const fetchWorkOrders = async () => {
   }
 };
 
+const initializeDataTable = () => {
+  if (!window.jQuery || !$.fn.DataTable) {
+    console.error("⚠️ jQuery or DataTables is not loaded yet.");
+    return;
+  }
+  if ($.fn.DataTable.isDataTable('#dataTable')) {
+    $('#dataTable').DataTable().destroy();
+  }
+  $('#dataTable').DataTable({
+    responsive: true,
+    autoWidth: false,
+    order: [[5, 'desc']], // Assuming Date Requested is at index 5
+    rowCallback: function (row, data, index) {
+      $('td:eq(0)', row).html(index + 1);
+    }
+  });
+  console.log("✅ DataTables initialized");
+  if (window.feather) {
+    feather.replace();
+  } else {
+    console.error("⚠️ Feather icons library is not yet loaded.");
+  }
+};
+
+// ------------------------------
+// Modal & Status Update Methods
+// ------------------------------
+const openModal = (order) => {
+  selectedOrder.value = { ...order };
+  showModal.value = true;
+};
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const acceptOrder = async (order) => {
+  try {
+    await axios.patch(`/api/admin-work-orders/${order.id}`, { status: 'Received' });
+    console.log("✅ Order Accepted");
+    await fetchWorkOrders();
+    closeModal();
+  } catch (error) {
+    console.error("❌ Error accepting order:", error.response ? error.response.data : error);
+  }
+};
+
+const declineOrder = async (order) => {
+  try {
+    await axios.patch(`/api/admin-work-orders/${order.id}`, { status: 'Canceled' });
+    console.log("✅ Order Declined");
+    await fetchWorkOrders();
+    closeModal();
+  } catch (error) {
+    console.error("❌ Error declining order:", error.response ? error.response.data : error);
+  }
+};
+
+const completeOrder = async (order) => {
+  if (!order.completed_description) {
+    alert('Please provide a description for the completed work.');
+    return;
+  }
+  try {
+    await axios.patch(`/api/admin-work-orders/${order.id}`, {
+      status: 'Completed',
+      completed_description: order.completed_description
+    });
+    console.log("✅ Order Completed");
+    calculateCategory(order);
+    await fetchWorkOrders();
+    closeModal();
+  } catch (error) {
+    console.error("❌ Error completing order:", error.response ? error.response.data : error);
+  }
+};
+
+const calculateCategory = (order) => {
+  const daysDiff = Math.ceil(
+    (new Date() - new Date(order.date_requested)) / (1000 * 60 * 60 * 24)
+  );
+  if (daysDiff <= 1) {
+    order.category = 'Category I (Finished within one working day)';
+  } else if (daysDiff <= 3) {
+    order.category = 'Category II (1-3 working days)';
+  } else if (daysDiff <= 7) {
+    order.category = 'Category III (4-7 working days)';
+  } else {
+    order.category = 'Category IV (7+ working days)';
+  }
+};
+
+const printOrder = () => {
+  window.print();
+};
+
+// ------------------------------
+// Dynamic Asset Loading
+// ------------------------------
 onMounted(() => {
-  // Load CSS files dynamically
   const loadCSS = (href) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -83,7 +144,6 @@ onMounted(() => {
     document.head.appendChild(link);
   };
 
-  // Load JavaScript files dynamically
   const loadScript = (src, callback) => {
     const script = document.createElement('script');
     script.src = src;
@@ -92,40 +152,30 @@ onMounted(() => {
     document.body.appendChild(script);
   };
 
-  // ✅ Load CSS files
+  // Load CSS files
   loadCSS('/css/styles.css');
   loadCSS('/css/dataTables.bootstrap4.min.css');
 
-  // ✅ Load jQuery first
+  // Load JS files in proper order
   loadScript('/js/jquery-3.5.1.min.js', () => {
     console.log("✅ jQuery loaded");
-
-    // ✅ Load Bootstrap and DataTables after jQuery
     loadScript('/js/bootstrap.bundle.min.js');
     loadScript('/js/jquery.dataTables.min.js', () => {
       console.log("✅ DataTables loaded");
-
       loadScript('/js/dataTables.bootstrap4.min.js', () => {
         console.log("✅ DataTables Bootstrap loaded");
         initializeDataTable();
       });
     });
-
-    // ✅ Load other necessary scripts
     loadScript('/js/all.min.js');
-
-    // ✅ Load Feather icons last
     loadScript('/js/feather.min.js', () => {
       console.log("✅ Feather icons loaded");
-      feather.replace(); // Apply icons after loading
+      feather.replace();
     });
-
-    // ✅ Load DataTables demo and custom scripts
     loadScript('/demo/datatables-demo.js');
     loadScript('/js/scripts.js');
   });
 
-  // ✅ Fetch work orders
   fetchWorkOrders();
 });
 </script>
@@ -136,96 +186,102 @@ onMounted(() => {
     <div id="layoutSidenav">
       <div id="layoutSidenav_content">
         <main>
-          <header class="pb-10">
-            <div class="container">
-              <div class="page-header-content pt-4">
-                <div class="row align-items-center justify-content-between">
-                  <div class="col-auto">
-                  </div>
-                </div>
-              </div>
-            </div> 
-          </header>
 
-          <!-- Main content -->
-          <div class="container mt-n10">
+
+          <!-- Work Orders Table -->
+          <div class="container mt-4">
             <div class="card mb-4">
-              <div class="card-header">Work Order Requests</div>
+              <div class="card-header bg-primary text-white">Work Orders</div>
               <div class="card-body">
-                <div class="datatable">
-                  <table class="table table-bordered table-hover" 
-                        id="dataTable" 
-                        style="margin: auto;" 
-                        cellspacing="0">
-                    <thead>
-                      <tr>
-                        <th>No.</th> <!-- Row number column -->
-                        <th>Ticket Number</th>
-                        <th>College/Unit</th>
-                        <th>Department</th>
-                        <th>Concern</th>
-                        <th>Date Requested</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                        <th style="display:none;">Created At</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="order in workOrders" :key="order.id">
-                        <td></td> <!-- Empty cell for row number -->
-                        <td>{{ order.ticket_number }}</td>
-                        <td>{{ order.college }}</td>
-                        <td>{{ order.department }}</td>
-                        <td>{{ order.concern }}</td>
-                        <td>{{ order.date_requested }}</td>
-                        <td>
-                          <span v-if="order.status === 'Submitted'" class="badge badge-primary">Submitted</span>
-                          <span v-else-if="order.status === 'Received'" class="badge badge-info">Accepted</span>
-                          <span v-else-if="order.status === 'Completed'" class="badge badge-success">Completed</span>
-                          <span v-else-if="order.status === 'Canceled'" class="badge badge-danger">Canceled</span>
-                        </td>
-                        <td>
-                          <div class="d-flex justify-content-center">
-                            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"
-                                    title="Edit status"
-                                    @click="toggleEditStatus(order)">
-                              <i data-feather="edit"></i>
-                            </button>
-                            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"
-                                    title="View"
-                                    @click="toggleEditStatus(order)">
-                              <i data-feather="eye"></i>
-                            </button>
-                          </div>
-                          <div v-if="order.editStatus" style="margin-top: 5px;">
-                            <select v-model="order.status" 
-                                    @change="updateStatus(order)" 
-                                    class="form-control">
-                              <option value="Submitted">Submitted</option>
-                              <option value="Received">Accept</option>
-                              <option value="Completed">Complete</option>
-                              <option value="Canceled">Cancel</option>
-                            </select>
-                          </div>
-                        </td>
-                        <td style="display:none;">{{ order.created_at }}</td>
-                      </tr>
-                      <tr v-if="workOrders.length === 0">
-                        <td colspan="9" class="text-center">No work orders found.</td>
-                      </tr>
-                    </tbody>
-                  </table>
-
-
-                </div>
+                <table class="table table-bordered table-hover" id="dataTable">
+                  <thead>
+                    <tr>
+                      <th>No.</th>
+                      <th>Ticket Number</th>
+                      <th>College/Unit</th>
+                      <th>Department</th>
+                      <th>Concern</th>
+                      <th>Date Requested</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(order, index) in workOrders" :key="order.id">
+                      <td>{{ index + 1 }}</td>
+                      <td>{{ order.ticket_number }}</td>
+                      <td>{{ order.college }}</td>
+                      <td>{{ order.department }}</td>
+                      <td>{{ order.concern }}</td>
+                      <td>{{ order.date_requested }}</td>
+                      <td>
+                        <span :class="{
+                          'badge badge-primary': order.status === 'Submitted',
+                          'badge badge-info': order.status === 'Received',
+                          'badge badge-success': order.status === 'Completed',
+                          'badge badge-danger': order.status === 'Canceled'
+                        }">
+                          {{ order.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-info" @click="openModal(order)">
+                          <i data-feather="eye"></i> View
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="workOrders.length === 0">
+                      <td colspan="8" class="text-center">No work orders found.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        </main> 
+
+          <!-- Use the WorkOrderModal component -->
+          <WorkOrderModal
+            v-if="showModal"
+            :order="selectedOrder"
+            @close="closeModal"
+            @accept="acceptOrder"
+            @decline="declineOrder"
+            @complete="completeOrder"
+            @print="printOrder"
+          />
+        </main>
       </div>
     </div>
   </body>
 </template>
 
-
-
+<style scoped>
+/* Modal Header styling */
+.modal-header {
+  background-color: #007bff; /* Primary color */
+}
+.modal-title {
+  font-weight: bold;
+}
+/* Form group spacing */
+.form-group {
+  margin-bottom: 1rem;
+}
+/* Badge styling */
+.badge {
+  font-size: 14px;
+  padding: 5px 10px;
+}
+/* Button styling */
+button {
+  cursor: pointer;
+}
+.btn-outline-info {
+  color: #17a2b8;
+  border-color: #17a2b8;
+}
+.btn-outline-info:hover {
+  background-color: #17a2b8;
+  color: #fff;
+}
+</style>

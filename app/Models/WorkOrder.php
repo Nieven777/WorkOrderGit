@@ -24,5 +24,7 @@ class WorkOrder extends Model
         'user_id',
         'ticket_number',
         'status',
+        'category',
+        'completed_description',
     ];
 }

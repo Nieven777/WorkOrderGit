@@ -60,7 +60,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/admin-work-orders', [WorkOrderController::class, 'index']);
     
     // Update a specific work order's status
-    Route::patch('/work-orders/{id}', [WorkOrderController::class, 'update']);
+    Route::patch('/admin-work-orders/{id}', [WorkOrderController::class, 'update']);
 
     Route::get('/admin-work-order-counts', [WorkOrderController::class, 'getWorkOrderCounts']);
 

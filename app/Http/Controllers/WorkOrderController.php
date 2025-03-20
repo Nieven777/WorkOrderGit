@@ -78,6 +78,7 @@ class WorkOrderController extends Controller
         // Update a work order's status (for admin)
         public function update(Request $request, $id)
         {
+    
             // Validate that a valid status is provided
             $request->validate([
                 'status' => 'required|in:Submitted,Received,Completed,Canceled'
@@ -91,6 +92,7 @@ class WorkOrderController extends Controller
                 'message' => 'Status updated successfully',
                 'workOrder' => $workOrder
             ], 200);
+            
         }
     
 
