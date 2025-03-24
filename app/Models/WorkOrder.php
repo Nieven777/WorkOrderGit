@@ -24,7 +24,16 @@ class WorkOrder extends Model
         'user_id',
         'ticket_number',
         'status',
-        'category',
-        'completed_description',
+        'completed_description', // allow mass assignment
+        'category',              // allow mass assignment
+        'received_by',           // allow mass assignment
     ];
+    public function receiver()
+{
+    return $this->belongsTo(User::class, 'received_by');
+}
+
+
+
+
 }

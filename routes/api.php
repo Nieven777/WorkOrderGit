@@ -8,7 +8,7 @@ use App\Http\Controllers\CollegeDepartmentController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\ConcernController;
 use App\Http\Controllers\WorkOrderController;
-use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DepartmentController;  
 
 
 
@@ -27,7 +27,7 @@ use App\Http\Controllers\DepartmentController;
 
 Route::middleware('auth:sanctum')->get('/adminusertable', function (Request $request) {
     return $request->user();
-});
+}); 
 Route::put('/users/{id}', [UserController::class, 'update']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 
@@ -68,11 +68,16 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/todays-work-orders', [WorkOrderController::class, 'getTodaysWorkOrders']);
 });
 
-// Staff routes for work orders (ensure your 'role:staff' middleware is set up correctly)
-Route::middleware(['auth:sanctum', 'role:staff'])->group(function () {
-    // Get all work orders for staff
+// API routes for staff work orders, using Sanctum for authentication
+Route::middleware(['auth:sanctum', 'role:staff'])->group(function () { 
+    // Endpoint for fetching all work orders
     Route::get('/staff-work-orders', [WorkOrderController::class, 'index']);
+    // Endpoint for fetching work orders with status "Received"
+    Route::get('/staff-received-work-orders', [WorkOrderController::class, 'getStaffReceivedWorkOrders']);
     
-    // Update a specific work order's status
+    // Endpoint for fetching work orders with status "Completed"
+    Route::get('/staff-completed-work-orders', [WorkOrderController::class, 'getStaffCompletedWorkOrders']);
+    
+    // Common endpoint for updating work orders (e.g., changing status, storing description, category, etc.)
     Route::patch('/work-orders/{id}', [WorkOrderController::class, 'update']);
 });

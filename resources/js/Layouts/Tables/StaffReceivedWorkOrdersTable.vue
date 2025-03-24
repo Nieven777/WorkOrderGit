@@ -2,28 +2,20 @@
 import StaffNav from '@/Layouts/Staffnav/StaffNav.vue';
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
-import StaffWorkOrderModal from '@/Components/StaffWorkOrderModal.vue'; // Adjust the path if necessary
-
-// Configure Axios to include credentials and CSRF token (if needed)
-axios.defaults.withCredentials = true;
-const token = document.querySelector('meta[name="csrf-token"]');
-if (token) {
-  axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
-}
+import StaffReceivedWorkOrderModal from '@/Components/StaffReceivedWorkOrderModal.vue'; // Path as needed
 
 const workOrders = ref([]);
 const showModal = ref(false);
 const selectedOrder = ref(null);
 
-// ------------------------------
-// Data Fetching & DataTable Setup
-// ------------------------------
+// Fetch only work orders with status "Received"
 const fetchWorkOrders = async () => {
   try {
-    const response = await axios.get('/api/staff-work-orders');
-    // Filter to show only "Submitted" orders
+    const response = await axios.get('/api/staff-received-work-orders');
+
+    // Filter orders that are "Received" (i.e., accepted but not completed)
     workOrders.value = response.data
-      .filter(order => order.status === 'Submitted')
+      .filter(order => order.status === 'Received')
       .map(order => ({
         ...order,
         showFullDescription: false,
@@ -50,7 +42,7 @@ const initializeDataTable = () => {
   $('#dataTable').DataTable({
     responsive: true,
     autoWidth: false,
-    order: [[7, 'desc']],
+    order: [[6, 'desc']],
     rowCallback: function (row, data, index) {
       $('td:eq(0)', row).html(index + 1);
     }
@@ -58,14 +50,9 @@ const initializeDataTable = () => {
   console.log("✅ DataTables initialized");
   if (window.feather) {
     feather.replace();
-  } else {
-    console.error("⚠️ Feather icons library is not yet loaded.");
   }
 };
 
-// ------------------------------
-// Modal & Status Update Methods
-// ------------------------------
 const openModal = (order) => {
   selectedOrder.value = { ...order };
   showModal.value = true;
@@ -75,20 +62,23 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-const acceptOrder = async (order) => {
+const completeOrder = async (order) => {
+  // Here we update the order to "Completed" with the completed description and category.
   try {
-    await axios.patch(`/api/work-orders/${order.id}`, { status: 'Received' });
-    console.log("✅ Order Accepted");
-    await fetchWorkOrders();
+    await axios.patch(`/api/work-orders/${order.id}`, {
+      status: 'Completed',
+      completed_description: order.completed_description,
+      category: order.category
+    });
+    console.log("✅ Order Completed");
+    await fetchWorkOrders(); // Refresh the list; this order should now disappear.
     closeModal();
   } catch (error) {
-    console.error("❌ Error accepting order:", error.response ? error.response.data : error);
+    console.error("❌ Error completing order:", error.response ? error.response.data : error);
   }
 };
 
-// ------------------------------
-// Dynamic Asset Loading
-// ------------------------------
+// Dynamic asset loading (similar to previous pages)
 onMounted(() => {
   const loadCSS = (href) => {
     const link = document.createElement('link');
@@ -96,7 +86,6 @@ onMounted(() => {
     link.href = href;
     document.head.appendChild(link);
   };
-
   const loadScript = (src, callback) => {
     const script = document.createElement('script');
     script.src = src;
@@ -104,12 +93,9 @@ onMounted(() => {
     script.onload = callback || null;
     document.body.appendChild(script);
   };
-
-  // Load CSS files
   loadCSS('/css/styles.css');
   loadCSS('/css/dataTables.bootstrap4.min.css');
 
-  // Load JS files in proper order
   loadScript('/js/jquery-3.5.1.min.js', () => {
     console.log("✅ jQuery loaded");
     loadScript('/js/bootstrap.bundle.min.js');
@@ -142,7 +128,7 @@ onMounted(() => {
           <!-- Work Orders Table -->
           <div class="container mt-4">
             <div class="card mb-4">
-              <div class="card-header bg-primary text-white">Work Order Requests</div>
+              <div class="card-header bg-primary text-white">Received Work Orders</div>
               <div class="card-body">
                 <table class="table table-bordered table-hover" id="dataTable">
                   <thead>
@@ -189,13 +175,13 @@ onMounted(() => {
               </div>
             </div>
           </div>
-
-          <!-- Use the StaffWorkOrderModal component -->
-          <StaffWorkOrderModal
+          <!-- Use the StaffReceivedWorkOrderModal component -->
+          <StaffReceivedWorkOrderModal
             v-if="showModal"
             :order="selectedOrder"
             @close="closeModal"
-            @accept="acceptOrder"
+            @complete="completeOrder"
+            @print="$emit('print')"
           />
         </main>
       </div>
@@ -229,4 +215,3 @@ button {
   color: #fff;
 }
 </style>
-  

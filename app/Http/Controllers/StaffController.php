@@ -17,4 +17,15 @@ class StaffController extends Controller
     {
         return Inertia::render('staff/StaffWorkOrderList'); // This points to your Vue component
     }
+     // This method returns the page that lists work orders with status "Received"
+     public function staffReceivedWorkOrderList()
+     {
+         return Inertia::render('staff/StaffReceivedWorkOrders');
+     }
+ 
+     // This method returns the page that lists work orders with status "Completed"
+     public function staffCompletedWorkOrderList()
+     {
+         return Inertia::render('staff/StaffCompletedWorkOrdersTable');
+     }
 }

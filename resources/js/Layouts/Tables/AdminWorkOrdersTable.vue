@@ -1,6 +1,6 @@
 <script setup>
 import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import axios from 'axios';
 import WorkOrderModal from '@/Components/WorkOrderModal.vue'; // Adjust the path if necessary
 
@@ -15,9 +15,12 @@ const workOrders = ref([]);
 const showModal = ref(false);
 const selectedOrder = ref(null);
 
-// ------------------------------
-// Data Fetching & DataTable Setup
-// ------------------------------
+// Filter variables
+const selectedCollege = ref('');
+const selectedDepartment = ref('');
+const selectedStatus = ref('');
+
+// Fetch work orders
 const fetchWorkOrders = async () => {
   try {
     const response = await axios.get('/api/admin-work-orders');
@@ -36,6 +39,22 @@ const fetchWorkOrders = async () => {
     console.error("❌ Error fetching work orders:", error);
   }
 };
+
+// Computed properties for filtering
+const filteredWorkOrders = computed(() => {
+  return workOrders.value.filter(order => {
+    return (
+      (selectedCollege.value === '' || order.college === selectedCollege.value) &&
+      (selectedDepartment.value === '' || order.department === selectedDepartment.value) &&
+      (selectedStatus.value === '' || order.status === selectedStatus.value)
+    );
+  });
+});
+
+// Extract unique values for dropdowns
+const uniqueColleges = computed(() => [...new Set(workOrders.value.map(order => order.college))]);
+const uniqueDepartments = computed(() => [...new Set(workOrders.value.map(order => order.department))]);
+const uniqueStatuses = ['Submitted', 'Received', 'Completed', 'Canceled'];
 
 const initializeDataTable = () => {
   if (!window.jQuery || !$.fn.DataTable) {
@@ -61,9 +80,7 @@ const initializeDataTable = () => {
   }
 };
 
-// ------------------------------
 // Modal & Status Update Methods
-// ------------------------------
 const openModal = (order) => {
   selectedOrder.value = { ...order };
   showModal.value = true;
@@ -186,13 +203,36 @@ onMounted(() => {
     <div id="layoutSidenav">
       <div id="layoutSidenav_content">
         <main>
-
-
-          <!-- Work Orders Table -->
           <div class="container mt-4">
             <div class="card mb-4">
               <div class="card-header bg-primary text-white">Work Orders</div>
               <div class="card-body">
+                
+                <!-- Filters -->
+                <div class="d-flex mb-3">
+                  <select v-model="selectedCollege" class="form-control mr-2">
+                    <option value="">All Colleges</option>
+                    <option v-for="college in uniqueColleges" :key="college" :value="college">
+                      {{ college }}
+                    </option>
+                  </select>
+
+                  <select v-model="selectedDepartment" class="form-control mr-2">
+                    <option value="">All Departments</option>
+                    <option v-for="department in uniqueDepartments" :key="department" :value="department">
+                      {{ department }}
+                    </option>
+                  </select>
+
+                  <select v-model="selectedStatus" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option v-for="status in uniqueStatuses" :key="status" :value="status">
+                      {{ status }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Work Orders Table -->
                 <table class="table table-bordered table-hover" id="dataTable">
                   <thead>
                     <tr>
@@ -207,7 +247,7 @@ onMounted(() => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(order, index) in workOrders" :key="order.id">
+                    <tr v-for="(order, index) in filteredWorkOrders" :key="order.id">
                       <td>{{ index + 1 }}</td>
                       <td>{{ order.ticket_number }}</td>
                       <td>{{ order.college }}</td>
@@ -226,12 +266,9 @@ onMounted(() => {
                       </td>
                       <td>
                         <button class="btn btn-sm btn-outline-info" @click="openModal(order)">
-                          <i data-feather="eye"></i> View
+                           View
                         </button>
                       </td>
-                    </tr>
-                    <tr v-if="workOrders.length === 0">
-                      <td colspan="8" class="text-center">No work orders found.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -239,7 +276,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Use the WorkOrderModal component -->
+          <!-- Work Order Modal -->
           <WorkOrderModal
             v-if="showModal"
             :order="selectedOrder"

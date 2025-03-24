@@ -43,7 +43,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/home', function () {
         return redirect(roleBasedRedirect(auth()->user()->role)); 
-    });
+    });     
 
     // Admin Routes
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -66,12 +66,13 @@ Route::middleware(['auth'])->group(function () {
 
     });
 
-    // Staff Routes
-    Route::middleware(['role:staff'])->prefix('staff')->name('staff.')->group(function () {
-        Route::get('/dashboard', [StaffController::class, 'index'])->name('dashboard');
-        Route::get('/StaffWorkOrderList', [StaffController::class, 'staffworkorderlist'])->name('admin.StaffWorkOrderList');
-
-    }); 
+// Staff routes for authenticated staff users
+Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/dashboard', [StaffController::class, 'index'])->name('dashboard');
+    Route::get('/StaffWorkOrderList', [StaffController::class, 'staffWorkOrderList'])->name('StaffWorkOrderList');
+    Route::get('/StaffReceivedWorkOrders', [StaffController::class, 'staffReceivedWorkOrderList'])->name('StaffReceivedWorkOrders');
+    Route::get('/StaffCompletedWorkOrders', [StaffController::class, 'staffCompletedWorkOrderList'])->name('StaffCompletedWorkOrders');
+});
 
     // Employee Routes
     Route::middleware(['role:employee'])->prefix('employee')->name('employee.')->group(function () {

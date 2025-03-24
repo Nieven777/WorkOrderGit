@@ -70,21 +70,22 @@ function logout() {
                                 <div class="nav-link-icon"><i data-feather="tool"></i></div>
                                 Equipment
                             </a> -->
+            
                             <a class="nav-link" href="/staff/StaffWorkOrderList">
                                 <div class="nav-link-icon"><i data-feather="clipboard"></i></div>
                                 Work Orders
                             </a>
                             <div class="sidenav-menu-heading"></div>
 
-                            <a class="nav-link" href="/staff/StaffMyWorkOrderRequests">
+                            <a class="nav-link" href="/staff/StaffReceivedWorkOrders">
                                 <div class="nav-link-icon"><i data-feather="tool"></i></div>
-                                Received Work Orders
+                                My Received Work Orders
                             </a>
                             <div class="sidenav-menu-heading"></div>
-                            <!-- <a class="nav-link" href="/profile">
+                            <a class="nav-link" href="/staff/StaffCompletedWorkOrders">
                                 <div class="nav-link-icon"><i data-feather="user"></i></div>
-                                
-                            </a> -->
+                                My Completed Work Orders
+                            </a>
                         </div> 
                     </div>
                     <div class="sidenav-footer">

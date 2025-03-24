@@ -78,22 +78,54 @@ class WorkOrderController extends Controller
         // Update a work order's status (for admin)
         public function update(Request $request, $id)
         {
-    
-            // Validate that a valid status is provided
+            // Validate the incoming status. Optionally, you can add rules for completed_description.
             $request->validate([
-                'status' => 'required|in:Submitted,Received,Completed,Canceled'
+                'status' => 'required|in:Submitted,Received,Completed,Canceled',
+                // If you want to require completed_description for completed orders:
+                'completed_description' => 'nullable|string',
             ]);
-    
+        
             $workOrder = WorkOrder::findOrFail($id);
-            $workOrder->status = $request->input('status');
+            $newStatus = $request->input('status');
+        
+            // Update the status first.
+            $workOrder->status = $newStatus;
+        
+            // When marking as Received, record the current authenticated user.
+            if ($newStatus === 'Received') {
+                // Make sure the user is authenticated
+                $user = auth()->user();
+                if ($user) {
+                    $workOrder->received_by = $user->id;
+                }
+            }
+        
+            // When marking as Completed, update the completed description and calculate category.
+            if ($newStatus === 'Completed') {
+                if ($request->has('completed_description')) {
+                    $workOrder->completed_description = $request->input('completed_description');
+                }
+                // Calculate the category based on date_requested vs. current date
+                $daysDiff = ceil((time() - strtotime($workOrder->date_requested)) / (60 * 60 * 24));
+                if ($daysDiff <= 1) {
+                    $workOrder->category = 'Category I (Finished within one working day)';
+                } elseif ($daysDiff <= 3) {
+                    $workOrder->category = 'Category II (1-3 working days)';
+                } elseif ($daysDiff <= 7) {
+                    $workOrder->category = 'Category III (4-7 working days)';
+                } else {
+                    $workOrder->category = 'Category IV (7+ working days)';
+                }
+            }
+        
             $workOrder->save();
-    
+        
             return response()->json([
                 'message' => 'Status updated successfully',
                 'workOrder' => $workOrder
             ], 200);
-            
         }
+        
     
 
     public function show(Request $request)
@@ -142,4 +174,30 @@ class WorkOrderController extends Controller
     
             return response()->json($orders, 200);
         }
+
+        public function getStaffReceivedWorkOrders(Request $request)
+        {
+            $user = $request->user();
+            \Log::debug('Authenticated user ID: ' . $user->id);
+        
+            $orders = WorkOrder::where('received_by', $user->id)
+                               ->where('status', 'Received')
+                               ->orderBy('created_at', 'desc')
+                               ->get();
+        
+            \Log::debug('Fetched orders: ' . $orders->count());
+            return response()->json($orders, 200);
+        }
+        
+        
+
+public function getStaffCompletedWorkOrders(Request $request)
+{
+    // Retrieve work orders with status 'Completed'
+    $orders = WorkOrder::where('status', 'Completed')
+                       ->orderBy('created_at', 'desc')
+                       ->get();
+    return response()->json($orders, 200);
+}
+
 }
