@@ -116,6 +116,9 @@ const validateForm = () => {
   if (!selectedDepartment.value) {
     errors.value.selectedDepartment = "Department is required";
   }
+  if (!selectedCollegeUnit.value) {
+    errors.value.selectedCollegeUnit = "College/Unit is required";
+  }
   if (!description.value.trim()) {
     errors.value.description = "Description is required";
   }
@@ -131,6 +134,7 @@ const resetForm = () => {
   selectedConcern.value = '';
   otherConcern.value = '';
   selectedDepartment.value = '';
+  selectedCollegeUnit.value = '';
   description.value = '';
   privacyConsent.value = false;
 };
@@ -146,14 +150,14 @@ const confirmSubmit = async () => {
     const payload = {
       requested_by: requested_by.value,
       requisitioner_type: selectedRtype.value === 'other' ? otherRtype.value : selectedRtype.value,
-      college: user.value.college,
+      college: selectedCollegeUnit.value, // ithink this is the problem
       department: selectedDepartment.value, // temporary: this is department name/id from all departments
       concern: selectedConcern.value === 'other' ? otherConcern.value : selectedConcern.value,
       date_requested: todayDate.value,
       description: description.value,
     };
 
-    await axios.post('/api/submit-work-order', payload);
+    await axios.post('/api/admin-submit-work-order', payload);
     alert("Work order submitted successfully!");
     resetForm();
     modalVisible.value = false;
@@ -179,7 +183,7 @@ onMounted(async () => {
     fetchConcerns(),
     fetchRequisitioner(),
     fetchCollegeUnit()
-  ]);
+  ]); 
   loading.value = false;
 
 // Load assets (CSS and JS files)
@@ -200,25 +204,25 @@ onMounted(async () => {
 
   // Load CSS files
   loadCSS('/css/styles.css');
-  loadCSS('/css/dataTables.bootstrap4.min.css');
+  // loadCSS('/css/dataTables.bootstrap4.min.css');
 
   // Load JS files
   loadScript('/js/jquery-3.5.1.min.js', () => {
     console.log("✅ jQuery loaded");
     loadScript('/js/bootstrap.bundle.min.js');
-    loadScript('/js/jquery.dataTables.min.js', () => {
-      console.log("✅ DataTables loaded");
-      loadScript('/js/dataTables.bootstrap4.min.js', () => {
-        console.log("✅ DataTables Bootstrap loaded");
-        initializeDataTable();
-      });
-    });
+    // loadScript('/js/jquery.dataTables.min.js', () => {
+    //   console.log("✅ DataTables loaded");
+    //   loadScript('/js/dataTables.bootstrap4.min.js', () => {
+    //     console.log("✅ DataTables Bootstrap loaded");
+    //     initializeDataTable();
+    //   });
+    // });
     loadScript('/js/all.min.js');
     loadScript('/js/feather.min.js', () => {
-      console.log("✅ Feather icons loaded");
+    //   console.log("✅ Feather icons loaded");
       feather.replace();
     });
-    loadScript('/demo/datatables-demo.js');
+    // loadScript('/demo/datatables-demo.js');
     loadScript('/js/scripts.js');
   });
 });
@@ -257,8 +261,8 @@ onMounted(async () => {
                       <div class="row">
                         <!-- Requested by (editable) -->
                         <div class="form-group col-md-6">
-                          <label class="small mb-1">Requested by</label>
-                          <input class="form-control" type="text" v-model="requested_by" />
+                          <label class="small mb-1">Requested by:</label>
+                          <input placeholder="Type here..." class="form-control" type="text" v-model="requested_by" />
                           <div v-if="errors.requested_by" class="text-danger">{{ errors.requested_by }}</div>
                         </div>
 
@@ -282,23 +286,25 @@ onMounted(async () => {
                           <div v-if="errors.otherRtype" class="text-danger">{{ errors.otherRtype }}</div>
                         </div>
                       </div>
-
-                      <div class="row">
+ 
+                      <div class="row"> 
                         <div class="form-group col-md-6">
-                            <label for="college" class="form-label">College</label>
+                            <label for="college" class="form-label">College/Unit</label>
                             <select v-model="selectedCollegeUnit" class="form-control">
-                                <option value="" disabled>Select College</option>
-                                <option v-for="college in collegeunit" 
-                                        :key="college.c_u_id" 
-                                        :value="college.c_u_id">
+                            <option value="" disabled>Select College/Unit</option>
+                            <option v-for="college in collegeunit" 
+                                    :key="college.c_u_id" 
+                                    :value="college.college_unit">
                                 {{ college.college_unit }}
-                                </option>
-                            </select>
+                            </option>
+                        </select>
+                        <div v-if="errors.selectedCollegeUnit" class="text-danger" >{{ errors.selectedCollegeUnit }}</div>
+
                             </div>
 
                         <!-- Department Dropdown (Temporary: All departments) -->
                         <div class="form-group col-md-6">
-                          <label>Department</label>
+                          <label class="form-label">Department</label>
                           <select class="form-control" v-model="selectedDepartment">
                             <option value="">Select a department</option>
                             <option v-for="dept in departments" :key="dept.department_id" :value="dept.department">
@@ -327,7 +333,7 @@ onMounted(async () => {
                         <!-- Concern -->
                         <div class="form-group col-md-6">
                           <label class="small mb-1">Select Concern:</label>
-                          <select v-model="selectedConcern" class="form-control">
+                          <select v-model="selectedConcern" class="form-control"> 
                             <option value="">Select a concern</option>
                             <option v-for="item in concerns" :key="item" :value="item">
                               {{ item }}
@@ -356,7 +362,7 @@ onMounted(async () => {
                         <!-- Description -->
                         <div class="form-group col-md-12">
                           <label class="small mb-1">Description</label>
-                          <textarea class="form-control" rows="3" v-model="description"></textarea>
+                          <textarea class="form-control" rows="3" v-model="description" placeholder ="Type here..."></textarea>
                           <div v-if="errors.description" class="text-danger">{{ errors.description }}</div>
                         </div>
                       </div>
@@ -411,6 +417,25 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Make font darker */
+body {
+    color: #333;
+}
+
+/* Make labels bold */
+label {
+    font-weight: bold;
+    color: #000;
+}
+
+/* Style input boxes and select dropdowns */
+input, textarea, select {
+    border: 1px solid black !important;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+/* Loading screen styles */
 .loading-screen {
     position: fixed;
     top: 0;
@@ -423,6 +448,7 @@ onMounted(async () => {
     align-items: center;
     z-index: 9999;
 }
+
 .spinner {
     width: 50px;
     height: 50px;
@@ -431,8 +457,10 @@ onMounted(async () => {
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 </style>
+

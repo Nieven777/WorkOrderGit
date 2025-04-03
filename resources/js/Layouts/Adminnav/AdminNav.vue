@@ -31,7 +31,7 @@ onMounted(() => {
         script.defer = true;
         script.onload = callback || null;
         document.body.appendChild(script);
-    };
+    }; 
 
     // Load jQuery first
     loadScript('/js/jquery-3.5.1.min.js', () => {

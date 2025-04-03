@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/concerns', [ConcernController::class, 'index']); 
 Route::get('/wrequisitioner', [RequisitionerController::class, 'index']);
-Route::post('/submit-work-order', [WorkOrderController::class, 'store']);
+Route::post('/emp-submit-work-order', [WorkOrderController::class, 'emp_reqwork_store']);
 Route::get('/my-work-orders', [WorkOrderController::class, 'show']);
 Route::middleware('auth:sanctum')->get('/user-and-departments', [DepartmentController::class, 'getUserAndDepartments']);
 Route::get('/colleges/{collegeId}/departments', [DepartmentController::class, 'getDepartmentsByCollege']);
@@ -66,6 +66,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Endpoint for fetching today's work orders
     Route::get('/todays-work-orders', [WorkOrderController::class, 'getTodaysWorkOrders']);
+
+    //Store Request work
+    Route::post('/admin-submit-work-order', [WorkOrderController::class, 'admin_reqwork_store']);
+
 });
 
 // API routes for staff work orders, using Sanctum for authentication

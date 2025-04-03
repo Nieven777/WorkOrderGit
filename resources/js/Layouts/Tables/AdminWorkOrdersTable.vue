@@ -1,8 +1,8 @@
 <script setup>
 import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
-import { ref, onMounted, nextTick, computed } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
-import WorkOrderModal from '@/Components/WorkOrderModal.vue'; // Adjust the path if necessary
+import WorkOrderModal from '@/Components/WorkOrderModal.vue';
 
 // Configure Axios to include credentials and CSRF token
 axios.defaults.withCredentials = true;
@@ -11,16 +11,18 @@ if (token) {
   axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
 }
 
+// Reactive variables for work orders, modal visibility, and filter values
 const workOrders = ref([]);
 const showModal = ref(false);
 const selectedOrder = ref(null);
 
-// Filter variables
+// Filter & search reactive variables
+const searchQuery = ref('');
 const selectedCollege = ref('');
 const selectedDepartment = ref('');
 const selectedStatus = ref('');
 
-// Fetch work orders
+// Fetch work orders and then initialize the DataTable once data is rendered
 const fetchWorkOrders = async () => {
   try {
     const response = await axios.get('/api/admin-work-orders');
@@ -32,7 +34,7 @@ const fetchWorkOrders = async () => {
     }));
     nextTick(() => {
       setTimeout(() => {
-        initializeDataTable();
+        initializeDataTable(); 
       }, 100);
     });
   } catch (error) {
@@ -40,34 +42,23 @@ const fetchWorkOrders = async () => {
   }
 };
 
-// Computed properties for filtering
-const filteredWorkOrders = computed(() => {
-  return workOrders.value.filter(order => {
-    return (
-      (selectedCollege.value === '' || order.college === selectedCollege.value) &&
-      (selectedDepartment.value === '' || order.department === selectedDepartment.value) &&
-      (selectedStatus.value === '' || order.status === selectedStatus.value)
-    );
-  });
-});
+// DataTable instance reference
+let dataTableInstance = null;
 
-// Extract unique values for dropdowns
-const uniqueColleges = computed(() => [...new Set(workOrders.value.map(order => order.college))]);
-const uniqueDepartments = computed(() => [...new Set(workOrders.value.map(order => order.department))]);
-const uniqueStatuses = ['Submitted', 'Received', 'Completed', 'Canceled'];
-
+// DataTable initialization function
 const initializeDataTable = () => {
   if (!window.jQuery || !$.fn.DataTable) {
     console.error("⚠️ jQuery or DataTables is not loaded yet.");
     return;
   }
+  // Destroy any existing instance to avoid duplicates
   if ($.fn.DataTable.isDataTable('#dataTable')) {
     $('#dataTable').DataTable().destroy();
   }
-  $('#dataTable').DataTable({
+  dataTableInstance = $('#dataTable').DataTable({
     responsive: true,
     autoWidth: false,
-    order: [[5, 'desc']], // Assuming Date Requested is at index 5
+    order: [[5, 'desc']], // Date Requested column (adjust index if needed)
     rowCallback: function (row, data, index) {
       $('td:eq(0)', row).html(index + 1);
     }
@@ -80,16 +71,46 @@ const initializeDataTable = () => {
   }
 };
 
-// Modal & Status Update Methods
+// Apply filters via DataTables API
+const applyFilters = () => { 
+  if (dataTableInstance) {
+    // Global search on Ticket Number (assumed column index 1)
+    dataTableInstance.column(1).search(searchQuery.value || '');
+
+    // Column search: College/Unit (assumed column index 2)
+    dataTableInstance.column(2).search(selectedCollege.value || '');
+
+    // Column search: Department (assumed column index 3)
+    dataTableInstance.column(3).search(selectedDepartment.value || '');
+
+    // Column search: Status (assumed column index 7)
+    dataTableInstance.column(6).search(selectedStatus.value || '');
+
+    dataTableInstance.draw();
+  }
+};
+
+// Reset filters and clear DataTables search
+const resetFilters = () => {
+  searchQuery.value = '';
+  selectedCollege.value = '';
+  selectedDepartment.value = '';
+  selectedStatus.value = '';
+  applyFilters();
+};
+
+// Open modal and set the selected order for viewing/updating
 const openModal = (order) => {
   selectedOrder.value = { ...order };
   showModal.value = true;
 };
 
+// Close the modal
 const closeModal = () => {
   showModal.value = false;
 };
 
+// Modal & Order Status update methods (unchanged from your original code)
 const acceptOrder = async (order) => {
   try {
     await axios.patch(`/api/admin-work-orders/${order.id}`, { status: 'Received' });
@@ -150,10 +171,10 @@ const printOrder = () => {
   window.print();
 };
 
-// ------------------------------
-// Dynamic Asset Loading
-// ------------------------------
+// Dynamic asset loading: Load external CSS & JS files when the component is mounted
 onMounted(() => {
+  fetchWorkOrders();
+  
   const loadCSS = (href) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -169,11 +190,9 @@ onMounted(() => {
     document.body.appendChild(script);
   };
 
-  // Load CSS files
   loadCSS('/css/styles.css');
   loadCSS('/css/dataTables.bootstrap4.min.css');
 
-  // Load JS files in proper order
   loadScript('/js/jquery-3.5.1.min.js', () => {
     console.log("✅ jQuery loaded");
     loadScript('/js/bootstrap.bundle.min.js');
@@ -181,6 +200,7 @@ onMounted(() => {
       console.log("✅ DataTables loaded");
       loadScript('/js/dataTables.bootstrap4.min.js', () => {
         console.log("✅ DataTables Bootstrap loaded");
+        // Initialize DataTable when no filter has been applied yet
         initializeDataTable();
       });
     });
@@ -192,8 +212,6 @@ onMounted(() => {
     loadScript('/demo/datatables-demo.js');
     loadScript('/js/scripts.js');
   });
-
-  fetchWorkOrders();
 });
 </script>
 
@@ -205,31 +223,38 @@ onMounted(() => {
         <main>
           <div class="container mt-4">
             <div class="card mb-4">
-              <div class="card-header bg-primary text-white">Work Orders</div>
               <div class="card-body">
-                
-                <!-- Filters -->
+                <!-- Filter and Search Controls -->
                 <div class="d-flex mb-3">
-                  <select v-model="selectedCollege" class="form-control mr-2">
+                  <!-- Global search: Ticket Number -->
+                  <input
+                    v-model="searchQuery"
+                    @input="applyFilters"
+                    class="form-control mr-2"
+                    placeholder="Search Ticket Number"
+                  />
+                  <!-- College filter -->
+                  <select v-model="selectedCollege" @change="applyFilters" class="form-control mr-2">
                     <option value="">All Colleges</option>
-                    <option v-for="college in uniqueColleges" :key="college" :value="college">
+                    <option v-for="college in [...new Set(workOrders.map(o => o.college))]" :key="college" :value="college">
                       {{ college }}
                     </option>
                   </select>
-
-                  <select v-model="selectedDepartment" class="form-control mr-2">
+                  <!-- Department filter -->
+                  <select v-model="selectedDepartment" @change="applyFilters" class="form-control mr-2">
                     <option value="">All Departments</option>
-                    <option v-for="department in uniqueDepartments" :key="department" :value="department">
+                    <option v-for="department in [...new Set(workOrders.map(o => o.department))]" :key="department" :value="department">
                       {{ department }}
                     </option>
                   </select>
-
-                  <select v-model="selectedStatus" class="form-control">
+                  <!-- Status filter -->
+                  <select v-model="selectedStatus" @change="applyFilters" class="form-control mr-2">
                     <option value="">All Statuses</option>
-                    <option v-for="status in uniqueStatuses" :key="status" :value="status">
+                    <option v-for="status in ['Submitted', 'Received', 'Completed', 'Canceled']" :key="status" :value="status">
                       {{ status }}
                     </option>
                   </select>
+                  <button class="btn btn-secondary" @click="resetFilters">Reset</button>
                 </div>
 
                 <!-- Work Orders Table -->
@@ -247,7 +272,8 @@ onMounted(() => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(order, index) in filteredWorkOrders" :key="order.id">
+                    <!-- Render all work orders; DataTables will hide rows that do not match the filters -->
+                    <tr v-for="(order, index) in workOrders" :key="order.id">
                       <td>{{ index + 1 }}</td>
                       <td>{{ order.ticket_number }}</td>
                       <td>{{ order.college }}</td>
@@ -266,7 +292,7 @@ onMounted(() => {
                       </td>
                       <td>
                         <button class="btn btn-sm btn-outline-info" @click="openModal(order)">
-                           View
+                          View
                         </button>
                       </td>
                     </tr>
@@ -277,14 +303,14 @@ onMounted(() => {
           </div>
 
           <!-- Work Order Modal -->
-          <WorkOrderModal
-            v-if="showModal"
-            :order="selectedOrder"
-            @close="closeModal"
-            @accept="acceptOrder"
-            @decline="declineOrder"
-            @complete="completeOrder"
-            @print="printOrder"
+          <WorkOrderModal 
+            v-if="showModal" 
+            :order="selectedOrder" 
+            @close="showModal = false" 
+            @accept="acceptOrder(selectedOrder)" 
+            @decline="declineOrder(selectedOrder)" 
+            @complete="completeOrder(selectedOrder)" 
+            @print="printOrder" 
           />
         </main>
       </div>
@@ -293,32 +319,58 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Modal Header styling */
 .modal-header {
-  background-color: #007bff; /* Primary color */
+  background-color: #007bff; /* Modal header background color */
 }
 .modal-title {
-  font-weight: bold;
+  font-weight: bold; /* Bold modal title */
 }
-/* Form group spacing */
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1rem; /* Spacing for form groups */
 }
-/* Badge styling */
 .badge {
-  font-size: 14px;
-  padding: 5px 10px;
+  font-size: 14px; /* Badge text size */
+  padding: 5px 10px; /* Badge padding */
 }
-/* Button styling */
 button {
-  cursor: pointer;
+  cursor: pointer; /* Pointer cursor on buttons */
 }
 .btn-outline-info {
-  color: #17a2b8;
-  border-color: #17a2b8;
+  color: #17a2b8; /* Button text color */
+  border-color: #17a2b8; /* Button border color */
 }
 .btn-outline-info:hover {
-  background-color: #17a2b8;
+  background-color: #17a2b8; /* Button background on hover */
+  color: #fff; /* Button text color on hover */
+}
+/* Make all text darker */
+body, table, th, td, input, select, button, .modal-title {
+  color: #212529; /* Dark gray for better readability */
+}
+
+/* Ensure placeholders in input fields are also darker */
+input::placeholder {
+  color: #495057;
+}
+
+/* Improve contrast for the modal */
+.modal-header, .modal-title {
+  color: #ffffff; /* Keep modal header title white for contrast */
+}
+
+/* Darken text for badges */
+.badge {
+  color: #fff; /* White text for contrast */
+}
+
+/* Improve button contrast */
+.btn-outline-info {
+  color: #0c5460; /* Darker shade of blue-green */
+  border-color: #0c5460;
+}
+.btn-outline-info:hover {
+  background-color: #0c5460;
   color: #fff;
 }
+
 </style>

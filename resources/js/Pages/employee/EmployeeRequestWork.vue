@@ -10,9 +10,9 @@ const requested_by = ref('');
 const selectedRtype = ref('');
 const otherRtype = ref('');
 const selectedConcern = ref('');
-const otherConcern = ref('');
+const otherConcern = ref(''); 
 const description = ref('');
-const selectedDepartment = ref('');
+const selectedDepartment = ref(''); 
 
 // Options for dropdowns
 const concerns = ref([]);
@@ -139,7 +139,7 @@ const confirmSubmit = async () => {
       description: description.value,
     };
 
-    await axios.post('/api/submit-work-order', payload);
+    await axios.post('/api/emp-submit-work-order', payload);
     alert("Work order submitted successfully!");
     resetForm();
     modalVisible.value = false;
@@ -243,7 +243,7 @@ onMounted(async () => {
                         <!-- Requested by (editable) -->
                         <div class="form-group col-md-6">
                           <label class="small mb-1">Requested by</label>
-                          <input class="form-control" type="text" v-model="requested_by" />
+                          <input class="form-control" type="text" v-model="requested_by" placeholder="Type here..." />
                           <div v-if="errors.requested_by" class="text-danger">{{ errors.requested_by }}</div>
                         </div>
 
@@ -275,7 +275,7 @@ onMounted(async () => {
                         </div>
                         <!-- Department Dropdown (Temporary: All departments) -->
                         <div class="form-group col-md-6">
-                          <label>Department</label>
+                          <label class="small mb-1">Department</label>
                           <select class="form-control" v-model="selectedDepartment">
                             <option value="">Select a department</option>
                             <option v-for="dept in departments" :key="dept.department_id" :value="dept.department">
@@ -333,7 +333,7 @@ onMounted(async () => {
                         <!-- Description -->
                         <div class="form-group col-md-12">
                           <label class="small mb-1">Description</label>
-                          <textarea class="form-control" rows="3" v-model="description"></textarea>
+                          <textarea class="form-control" rows="3" v-model="description" placeholder="Type here..."></textarea>
                           <div v-if="errors.description" class="text-danger">{{ errors.description }}</div>
                         </div>
                       </div>
@@ -388,6 +388,23 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+body {
+    color: #333;
+}
+
+/* Make labels bold */
+label {
+    font-weight: bold;
+    color: #000;
+}
+
+/* Style input boxes and select dropdowns */
+input, textarea, select {
+    border: 1px solid black !important;
+    padding: 8px;
+    border-radius: 4px;
+}
+
 .loading-screen {
     position: fixed;
     top: 0;
