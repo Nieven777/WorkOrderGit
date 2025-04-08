@@ -80,7 +80,7 @@ function logout() {
                             <a class="nav-link" href="/staff/StaffReceivedWorkOrders">
                                 <div class="nav-link-icon"><i data-feather="tool"></i></div>
                                 My Received Work Orders
-                            </a>
+                            </a> 
                             <div class="sidenav-menu-heading"></div>
                             <a class="nav-link" href="/staff/StaffCompletedWorkOrders">
                                 <div class="nav-link-icon"><i data-feather="user"></i></div>

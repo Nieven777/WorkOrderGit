@@ -204,6 +204,17 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Adjust modal size and reduce padding */
+#dataTable_wrapper {
+  transform: scale(0.8);
+  transform-origin: top;
+}
+
+table th,
+table td {
+  font-size: 0.85rem; /* Slightly smaller font */
+  padding: 0.5rem; /* Reduced padding */
+}
 .modal-header {
   background-color: #007bff;
 }

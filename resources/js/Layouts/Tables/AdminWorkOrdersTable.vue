@@ -2,7 +2,7 @@
 import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
 import { ref, onMounted, nextTick } from 'vue';
 import axios from 'axios';
-import WorkOrderModal from '@/Components/WorkOrderModal.vue';
+import WorkOrderDetail from '@/Components/WorkOrderModal.vue'; // Import the new detailed view component
 
 // Configure Axios to include credentials and CSRF token
 axios.defaults.withCredentials = true;
@@ -11,10 +11,11 @@ if (token) {
   axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
 }
 
-// Reactive variables for work orders, modal visibility, and filter values
+// Reactive variables for work orders, detail view visibility, and filter values
 const workOrders = ref([]);
-const showModal = ref(false);
+const showDetailView = ref(false);
 const selectedOrder = ref(null);
+const isLoading = ref(false);
 
 // Filter & search reactive variables
 const searchQuery = ref('');
@@ -25,6 +26,7 @@ const selectedStatus = ref('');
 // Fetch work orders and then initialize the DataTable once data is rendered
 const fetchWorkOrders = async () => {
   try {
+    isLoading.value = true;
     const response = await axios.get('/api/admin-work-orders');
     workOrders.value = response.data.map(order => ({
       ...order,
@@ -39,6 +41,8 @@ const fetchWorkOrders = async () => {
     });
   } catch (error) {
     console.error("❌ Error fetching work orders:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -99,46 +103,54 @@ const resetFilters = () => {
   applyFilters();
 };
 
-// Open modal and set the selected order for viewing/updating
-const openModal = (order) => {
+// Open work order detail view and set the selected order
+const openDetailView = (order) => {
   selectedOrder.value = { ...order };
-  showModal.value = true;
+  showDetailView.value = true;
 };
 
-// Close the modal
-const closeModal = () => {
-  showModal.value = false;
+// Close the detail view
+const closeDetailView = () => {
+  showDetailView.value = false;
+  selectedOrder.value = null;
 };
 
-// Modal & Order Status update methods (unchanged from your original code)
-const acceptOrder = async (order) => {
+// Work Order Status update handlers
+const handleAccept = async (order) => {
   try {
+    isLoading.value = true;
     await axios.patch(`/api/admin-work-orders/${order.id}`, { status: 'Received' });
     console.log("✅ Order Accepted");
     await fetchWorkOrders();
-    closeModal();
+    closeDetailView();
   } catch (error) {
     console.error("❌ Error accepting order:", error.response ? error.response.data : error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-const declineOrder = async (order) => {
+const handleDecline = async (order) => {
   try {
+    isLoading.value = true;
     await axios.patch(`/api/admin-work-orders/${order.id}`, { status: 'Canceled' });
     console.log("✅ Order Declined");
     await fetchWorkOrders();
-    closeModal();
+    closeDetailView();
   } catch (error) {
     console.error("❌ Error declining order:", error.response ? error.response.data : error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
-const completeOrder = async (order) => {
+const handleComplete = async (order) => {
   if (!order.completed_description) {
     alert('Please provide a description for the completed work.');
     return;
   }
   try {
+    isLoading.value = true;
     await axios.patch(`/api/admin-work-orders/${order.id}`, {
       status: 'Completed',
       completed_description: order.completed_description
@@ -146,10 +158,17 @@ const completeOrder = async (order) => {
     console.log("✅ Order Completed");
     calculateCategory(order);
     await fetchWorkOrders();
-    closeModal();
+    closeDetailView();
   } catch (error) {
     console.error("❌ Error completing order:", error.response ? error.response.data : error);
+  } finally {
+    isLoading.value = false;
   }
+};
+
+const handleUpdate = (updatedOrder) => {
+  // Update the order in the local state
+  selectedOrder.value = { ...updatedOrder };
 };
 
 const calculateCategory = (order) => {
@@ -167,7 +186,7 @@ const calculateCategory = (order) => {
   }
 };
 
-const printOrder = () => {
+const handlePrint = () => {
   window.print();
 };
 
@@ -221,7 +240,8 @@ onMounted(() => {
     <div id="layoutSidenav">
       <div id="layoutSidenav_content">
         <main>
-          <div class="container mt-4">
+          <!-- Show the main table view when detail view is not active -->
+          <div v-if="!showDetailView" class="container mt-4">
             <div class="card mb-4">
               <div class="card-body">
                 <!-- Filter and Search Controls -->
@@ -254,7 +274,7 @@ onMounted(() => {
                       {{ status }}
                     </option>
                   </select>
-                  <button class="btn btn-secondary" @click="resetFilters">Reset</button>
+                  <button class="btn btn-primary" @click="resetFilters">Reset</button>
                 </div>
 
                 <!-- Work Orders Table -->
@@ -291,7 +311,7 @@ onMounted(() => {
                         </span>
                       </td>
                       <td>
-                        <button class="btn btn-sm btn-outline-info" @click="openModal(order)">
+                        <button class="btn btn-sm btn-outline-info" @click="openDetailView(order)">
                           View
                         </button>
                       </td>
@@ -302,15 +322,17 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Work Order Modal -->
-          <WorkOrderModal 
-            v-if="showModal" 
-            :order="selectedOrder" 
-            @close="showModal = false" 
-            @accept="acceptOrder(selectedOrder)" 
-            @decline="declineOrder(selectedOrder)" 
-            @complete="completeOrder(selectedOrder)" 
-            @print="printOrder" 
+          <!-- Show the detail view when a work order is selected -->
+          <WorkOrderDetail 
+            v-if="showDetailView" 
+            :order="selectedOrder"
+            :loading="isLoading"
+            @close="closeDetailView"
+            @accept="handleAccept"
+            @decline="handleDecline"
+            @complete="handleComplete"
+            @update="handleUpdate"
+            @print="handlePrint"
           />
         </main>
       </div>
@@ -319,8 +341,43 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Adjust modal size and reduce padding */
+#dataTable_wrapper {
+  transform: scale(0.8);
+  transform-origin: top;
+}
+
+table th,
+table td {
+  font-size: 0.85rem; /* Slightly smaller font */
+  padding: 0.5rem; /* Reduced padding */
+}
+
+button {
+  font-size: 0.85rem;
+  padding: 0.5rem;
+}
+
+.modal-dialog {
+  max-width: 80%;
+}
+
+.modal-content {
+  padding: 1rem;
+  font-size: 0.85rem;
+}
+
+select,
+input {
+  font-size: 0.85rem;
+  padding: 0.5rem;
+}
+
+.form-control {
+  max-width: 200px;
+}
 .modal-header {
-  background-color: #007bff; /* Modal header background color */
+  background-color: #61adff; /* Modal header background color */
 }
 .modal-title {
   font-weight: bold; /* Bold modal title */
@@ -353,24 +410,14 @@ input::placeholder {
   color: #495057;
 }
 
-/* Improve contrast for the modal */
-.modal-header, .modal-title {
-  color: #ffffff; /* Keep modal header title white for contrast */
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
 }
-
-/* Darken text for badges */
-.badge {
-  color: #fff; /* White text for contrast */
-}
-
-/* Improve button contrast */
-.btn-outline-info {
-  color: #0c5460; /* Darker shade of blue-green */
-  border-color: #0c5460;
-}
-.btn-outline-info:hover {
-  background-color: #0c5460;
-  color: #fff;
-}
-
 </style>

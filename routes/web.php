@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CollegeDepartmentController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\WordExportController;
 
 // Login page
 Route::get('/', function () {
@@ -83,6 +84,10 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
 
 
     });
+
+//Print
+Route::post('/export-word', [WordExportController::class, 'exportToWord']);
+
 
 
 

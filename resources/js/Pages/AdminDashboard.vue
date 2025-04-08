@@ -1,72 +1,138 @@
-
 <script setup>
 import AdminNav from '@/Layouts/Adminnav/AdminNav.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import axios from 'axios';
 
-// Reactive variables for summary counts
 const totalOrders = ref(0);
 const inProgressOrders = ref(0);
 const completedOrders = ref(0);
 const cancelledOrders = ref(0);
-
-// Reactive variable for today's work orders
 const todaysOrders = ref([]);
-const loading = ref(true); // ✅ Loading state
+const monthlyWorkOrders = ref([]);
+const recentActivities = ref([]);
+const loading = ref(true);
 
-// Fetch summary counts from the API
-const fetchCounts = () => {
-  axios.get('/api/admin-work-order-counts')
-    .then(response => {
-      totalOrders.value = response.data.total;
-      inProgressOrders.value = response.data.inProgress;
-      completedOrders.value = response.data.completed;
-      cancelledOrders.value = response.data.cancelled;
-    })
-    .catch(error => {
-      console.error('Error fetching work order counts:', error);
-    });
+// Charts
+const pieChart = ref(null);
+const barChart = ref(null);
+
+// Fetch summary counts
+const fetchCounts = async () => {
+  try {
+    const { data } = await axios.get('/api/admin-work-order-counts');
+    totalOrders.value = data.total;
+    inProgressOrders.value = data.inProgress;
+    completedOrders.value = data.completed;
+    cancelledOrders.value = data.cancelled;
+  } catch (error) {
+    console.error('Error fetching work order counts:', error);
+  }
 };
 
-// Fetch today's work orders from the API
-const fetchTodaysOrders = () => {
-  axios.get('/api/todays-work-orders')
-    .then(response => {
-      todaysOrders.value = response.data;
-    })
-    .catch(error => {
-      console.error("Error fetching today's work orders:", error);
-    })
-    .finally(() => {
-      loading.value = false; // ✅ Disable loading state after data is fetched
-    });
+// Fetch today's work orders
+const fetchTodaysOrders = async () => {
+  try {
+    const { data } = await axios.get('/api/todays-work-orders');
+    todaysOrders.value = data;
+  } catch (error) {
+    console.error("Error fetching today's work orders:", error);
+  } finally {
+    loading.value = false;
+    await nextTick();
+    initializeDataTable();
+  }
 };
 
-// DataTables initialization (if you need it for other tables)
+// Fetch bar chart data
+const fetchMonthlyWorkOrders = async () => {
+  try {
+    const { data } = await axios.get('/api/monthly-work-orders');
+    monthlyWorkOrders.value = data;
+  } catch (error) {
+    console.error("Error fetching monthly work orders:", error);
+  }
+};
+
+// Fetch recent activity
+const fetchRecentActivities = async () => {
+  try {
+    const { data } = await axios.get('/api/recent-activities');
+    recentActivities.value = data;
+  } catch (error) {
+    console.error("Error fetching recent activities:", error);
+  }
+};
+
+// Chart updates
+const updatePieChart = () => {
+  const ctx = document.getElementById('myPieChart');
+  if (!ctx) return;
+  if (pieChart.value) pieChart.value.destroy();
+
+  pieChart.value = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['In-progress', 'Completed', 'Cancelled'],
+      datasets: [{
+        data: [inProgressOrders.value, completedOrders.value, cancelledOrders.value],
+        backgroundColor: ['#007bff', '#28a745', '#dc3545'],
+        hoverBackgroundColor: ['#5a6268', '#218838', '#c82333'],
+      }],
+    },
+    options: {
+      responsive: true,
+      cutout: '70%',
+    },
+  });
+};
+
+const updateBarChart = () => {
+  const ctx = document.getElementById('myBarChart');
+  if (!ctx) return;
+  if (barChart.value) barChart.value.destroy();
+
+  barChart.value = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: monthlyWorkOrders.value.map(item => item.month),
+      datasets: [{
+        label: 'Work Orders',
+        data: monthlyWorkOrders.value.map(item => item.count),
+        backgroundColor: '#007bff',
+      }],
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true },
+      },
+    },
+  });
+};
+
+// DataTable
 const initializeDataTable = () => {
   if (!window.jQuery || !$.fn.DataTable) {
-    console.error("⚠️ jQuery or DataTables is not loaded yet.");
+    console.error("⚠️ jQuery or DataTables is not loaded.");
     return;
   }
-  if (!$.fn.DataTable.isDataTable('#dataTable')) {
-    $('#dataTable').DataTable({
+
+  const table = $('#dataTable');
+  if (!$.fn.DataTable.isDataTable(table)) {
+    table.DataTable({
       destroy: true,
       responsive: true,
       autoWidth: false,
-      order: [[4, 'desc']], // ✅ Order by the hidden created_at column (index 4)
+      order: [[4, 'desc']],
     });
-    console.log("✅ DataTables initialized");
   }
-  
+
   if (window.feather) {
-    feather.replace();
-  } else {
-    console.error("⚠️ Feather icons library is not yet loaded.");
+    window.feather.replace();
   }
 };
 
-onMounted(() => {
-  // Functions to dynamically load CSS and JS
+// Load JS/CSS dynamically with corrected sequence
+const loadAssets = () => {
   const loadCSS = (href) => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -78,50 +144,62 @@ onMounted(() => {
     const script = document.createElement('script');
     script.src = src;
     script.defer = true;
-    script.onload = callback || null;
+    script.onload = callback;
     document.body.appendChild(script);
   };
 
-  // ✅ Load CSS first
+  // Load CSS first
   loadCSS('/css/styles.css');
   loadCSS('/css/dataTables.bootstrap4.min.css');
 
-  // ✅ Load jQuery first
+  // Load JS in order, ensuring dependencies are met
   loadScript('/js/jquery-3.5.1.min.js', () => {
-    console.log("✅ jQuery loaded");
-
-    // ✅ Load Bootstrap and DataTables after jQuery
-    loadScript('/js/bootstrap.bundle.min.js');
-    loadScript('/js/jquery.dataTables.min.js', () => {
-      console.log("✅ DataTables loaded");
-
-      loadScript('/js/dataTables.bootstrap4.min.js', () => {
-        console.log("✅ DataTables Bootstrap loaded");
-        initializeDataTable(); // ✅ Initialize after loading
+    loadScript('/js/bootstrap.bundle.min.js', () => {
+      loadScript('/js/jquery.dataTables.min.js', () => {
+        loadScript('/js/dataTables.bootstrap4.min.js', () => {
+          // After loading DataTables and Bootstrap, initialize DataTable
+          initializeDataTable();
+        });
       });
     });
 
-    // ✅ Load other scripts
-    loadScript('/js/all.min.js');
-
-    // ✅ Load Feather icons last
+    loadScript('/js/all.min.js'); // Load font-awesome or other JS dependencies
     loadScript('/js/feather.min.js', () => {
-      console.log("✅ Feather icons loaded");
-      feather.replace(); // ✅ Apply icons after loading
+      if (window.feather) window.feather.replace(); // Initialize feather icons
     });
 
-    loadScript('/demo/datatables-demo.js');
-    loadScript('/js/scripts.js');
-  });
+    loadScript('/js/Chart.min.js', () => {
+      // Initialize charts after Chart.js is loaded
+      updatePieChart();
+      updateBarChart();
+    });
 
-  // ✅ Fetch dynamic dashboard data
-  fetchCounts();
-  fetchTodaysOrders();
+    // Load demo chart scripts
+    loadScript('/demo/chart-area-demo.js');
+    loadScript('/demo/chart-bar-demo.js');
+    loadScript('/demo/chart-pie-demo.js');
+  });
+};
+
+// On mount
+onMounted(async () => {
+  loadAssets();
+
+  await fetchCounts();
+  await fetchTodaysOrders();
+  await fetchMonthlyWorkOrders();
+  await fetchRecentActivities();
+
+  await nextTick(() => {
+    updatePieChart();
+    updateBarChart();
+  });
 });
 </script>
 
+
 <template>
-  <body class="nav-fixed">
+  <div class="nav-fixed">
     <AdminNav />
     <div id="layoutSidenav">
       <div id="layoutSidenav_content">
@@ -129,15 +207,15 @@ onMounted(() => {
           <!-- Header -->
           <header class="page-header pb-10">
             <div class="container">
-              <div class="page-header-content pt-4">
+              <div class="page-header-content pt-2">
                 <div class="row align-items-center justify-content-between">
                   <div class="col-auto mt-4">
-                    <h1 class="page-header-title">
+                    <h3 class="page-header-title">
                       <div class="page-header-icon">
                         <i data-feather="activity"></i>
                       </div>
-                      Dashboard
-                    </h1>
+                     Admin Dashboard
+                    </h3>
                   </div>
                 </div>
               </div>
@@ -149,48 +227,69 @@ onMounted(() => {
             <div class="spinner"></div>
           </div>
 
-          <!-- Summary Cards -->
           <div class="container mt-n10" v-if="!loading">
-            <div class="row">
-              <!-- Total Work Orders -->
-              <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-primary thick-border">
-                  <div class="card-body">
-                    <h5>Total Work Orders</h5>
-                    <h3>{{ totalOrders }}</h3>
-                  </div>
-                </div>
-              </div>
-              <!-- In-progress Orders -->
-              <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-secondary thick-border">
-                  <div class="card-body">
-                    <h5>In-progress</h5>
-                    <h3>{{ inProgressOrders }}</h3>
-                  </div>
-                </div>
-              </div>
-              <!-- Completed Orders -->
-              <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-success thick-border">
-                  <div class="card-body">
-                    <h5>Completed</h5>
-                    <h3>{{ completedOrders }}</h3>
-                  </div>
-                </div>
-              </div>
-              <!-- Cancelled Orders -->
-              <div class="col-xl-3 mb-4">
-                <div class="card lift h-100 border-left-danger thick-border">
-                  <div class="card-body">
-                    <h5>Cancelled</h5>
-                    <h3>{{ cancelledOrders }}</h3>
+
+          <!-- Quick Actions -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header">Quick Actions</div>
+                  <div class="card-body d-flex flex-wrap gap-3">
+                    <button class="btn btn-primary">Create Work Order</button>
+                    <button class="btn btn-success">View All Orders</button>
+                    <button class="btn btn-secondary">Manage Users</button>
+                    <button class="btn btn-warning">Generate Reports</button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Latest Work Orders -->
+            <!-- Bar and Pie Charts -->
+            <div class="row">
+              <div class="col-lg-6">
+                <div class="card mb-4">
+                  <div class="card-header">Monthly Workorders</div>
+                  <div class="card-body">
+                    <div class="chart-bar">
+                      <canvas id="myBarChart" width="100%" height="50"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="card mb-4">
+                  <div class="card-header">Workorders</div>
+                  <div class="card-body">
+                    <div class="chart-pie">
+                      <canvas id="myPieChart" width="100%" height="50"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+            <!-- Recent Activities -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-header">Recent Activities</div>
+                  <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                      <li v-for="(activity, index) in recentActivities" :key="index" class="list-group-item">
+                        <strong>{{ activity.user }}</strong> {{ activity.action }} - <small class="text-muted">{{ activity.timestamp }}</small>
+                      </li>
+                      <li v-if="recentActivities.length === 0" class="list-group-item text-center text-muted">
+                        No recent activities.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Today's Work Orders -->
             <div class="card mb-4">
               <div class="card-header">Latest Work Orders Today</div>
               <div class="card-body">
@@ -229,32 +328,77 @@ onMounted(() => {
         </main>
       </div>
     </div>
-  </body>
+  </div>
 </template>
 
-<style>
-/* ✅ Loading screen styling */
+
+<style scoped>
+/* ✅ Loading screen */
 .loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-}
-.spinner {
-  border: 4px solid #ccc;
-  border-top: 4px solid #007bff;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  justify-content: center;
 }
 
-/* ✅ Thicker Border */
-.thick-border {
-  border-left-width: 7px !important;
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #007bff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ✅ Chart and card spacing */
+.chart-bar, .chart-pie {
+  padding: 10px;
+}
+
+/* ✅ Quick Actions responsiveness */
+.card-body.d-flex {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.card-body.d-flex button {
+  flex: 1 1 200px;
+}
+
+/* ✅ Status badge styles */
+.badge-submitted {
+  background-color: #6c757d;
+  color: white;
+}
+
+.badge-in-progress {
+  background-color: #1c07ff;
+  color: black;
+}
+
+.badge-completed {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-cancelled {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Optional: Hover effect for rows */
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
 }
 </style>

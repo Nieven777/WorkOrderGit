@@ -78,15 +78,15 @@ onMounted(() => {
                     </header> 
                     <!-- Main page content-->
                     <div class="container mt-n10">
-                        <div class="row"> 
+                        <div class="row">  
                             <div class="col-xl-4 mb-4">
                                 <!-- Dashboard example card 1-->
-                                <a class="card lift h-100" href="/employee/EmployeeRequestWork">
+                                <a class="card lift h-100" href="/staff/StaffWorkOrderList">
                                     <div class="card-body d-flex justify-content-center flex-column">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div class="mr-3">
                                                 <i class="feather-xl text-primary mb-3" data-feather="package"></i>
-                                                <h5>REQUEST WORK</h5>
+                                                <h5>Work Order List</h5>
                                                 <!-- <div class="text-muted small">Work reports description goes here</div> -->
                                             </div>
                                             <!-- <img src="  /assets/img/illustrations/browser-stats.svg" alt="..." style="width: 8rem" /> -->
@@ -96,12 +96,12 @@ onMounted(() => {
                             </div>
                             <div class="col-xl-4 mb-4">
                                 <!-- Dashboard example card 2-->
-                                <a class="card lift h-100" href="#!">
+                                <a class="card lift h-100" href="/staff/StaffReceivedWorkOrders">
                                     <div class="card-body d-flex justify-content-center flex-column">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div class="mr-3">
                                                 <i class="feather-xl text-secondary mb-3" data-feather="book"></i>
-                                                <h5>WORK ORDER LIST</h5>
+                                                <h5>Received Work Orders</h5>
                                                 <!-- <div class="text-muted small">Edit profile</div> -->
                                             </div>
                                             <!-- <img src="/assets/img/illustrations/processing.svg" alt="..." style="width: 8rem" /> -->
@@ -111,12 +111,12 @@ onMounted(() => {
                             </div>
                             <div class="col-xl-4 mb-4">
                                 <!-- Dashboard example card 3-->
-                                <a class="card lift h-100" href="#!">
+                                <a class="card lift h-100" href="/staff/StaffCompletedWorkOrders">
                                     <div class="card-body d-flex justify-content-center flex-column">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div class="mr-3">
                                                 <i class="feather-xl text-green mb-3" data-feather="layout"></i>
-                                                <h5>PROFILE</h5>
+                                                <h5>Completed Work Orders</h5>
                                                 <!-- <div class="text-muted small">Work order hereeeeee.</div> -->
                                             </div>
                                             <!-- <img src="/assets/img/illustrations/windows.svg" alt="..." style="width: 8rem" /> -->

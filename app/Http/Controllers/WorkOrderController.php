@@ -154,6 +154,8 @@ class WorkOrderController extends Controller
                 $user = auth()->user();
                 if ($user) {
                     $workOrder->received_by = $user->id;
+                    $workOrder->accepted_by = $user->first_name . ' ' . $user->last_name;
+
                 }
             }
         
@@ -162,6 +164,16 @@ class WorkOrderController extends Controller
                 if ($request->has('completed_description')) {
                     $workOrder->completed_description = $request->input('completed_description');
                 }
+            
+                // Record the user who completed the work order
+                $user = auth()->user();
+                if ($user) {
+                    $workOrder->completed_by = $user->first_name . ' ' . $user->last_name;
+                    $workOrder->completed_by_id = $user->id;
+
+
+                }
+            
                 // Calculate the category based on date_requested vs. current date
                 $daysDiff = ceil((time() - strtotime($workOrder->date_requested)) / (60 * 60 * 24));
                 if ($daysDiff <= 1) {
@@ -174,6 +186,7 @@ class WorkOrderController extends Controller
                     $workOrder->category = 'Category IV (7+ working days)';
                 }
             }
+            // Save the work order            
         
             $workOrder->save();
         
@@ -248,13 +261,15 @@ class WorkOrderController extends Controller
         
         
 
-public function getStaffCompletedWorkOrders(Request $request)
+        public function getStaffCompletedWorkOrders()
 {
-    // Retrieve work orders with status 'Completed'
     $orders = WorkOrder::where('status', 'Completed')
-                       ->orderBy('created_at', 'desc')
-                       ->get();
-    return response()->json($orders, 200);
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    // No need to eager load or map anymore, completed_by is already the name
+    return response()->json($orders);
 }
+
 
 }

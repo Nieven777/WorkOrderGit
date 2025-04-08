@@ -24,6 +24,7 @@
         "datatables.net-bs4": "^2.2.2",
         "feather-icons": "^4.29.2",
         "jquery": "^3.7.1",
+        "lucide-vue-next": "^0.487.0",
         "vue-router": "^4.5.0"
     }
 }

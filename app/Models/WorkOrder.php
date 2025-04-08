@@ -27,11 +27,23 @@ class WorkOrder extends Model
         'completed_description', // allow mass assignment
         'category',              // allow mass assignment
         'received_by',           // allow mass assignment
+        'completed_by',          // allow mass assignment
     ];
     public function receiver()
 {
     return $this->belongsTo(User::class, 'received_by');
 }
+
+public function completedBy()
+{
+    return $this->belongsTo(User::class, 'completed_by');
+}
+
+public function completedById()
+{
+    return $this->belongsTo(User::class, 'completed_by_id');
+}
+
 
 
 
