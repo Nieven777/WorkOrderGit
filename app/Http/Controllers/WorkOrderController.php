@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\WorkOrder;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpWord\TemplateProcessor;
 use App\Mail\WorkOrderSubmitted;
 use App\Models\SubmittedWorkOrder;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class WorkOrderController extends Controller
 {
@@ -269,6 +272,53 @@ class WorkOrderController extends Controller
 
     // No need to eager load or map anymore, completed_by is already the name
     return response()->json($orders);
+}
+
+public function print($id)
+    {
+        $workOrder = WorkOrder::findOrFail($id);
+        
+        // Load the template
+        $templatePath = Storage::path('public/templates/work_order_template.docx');
+        $templateProcessor = new TemplateProcessor($templatePath);
+        
+        // Replace placeholders in the template with actual data
+        $templateProcessor->setValue('ticket_number', $workOrder->ticket_number);
+        $templateProcessor->setValue('requested_by', $workOrder->requested_by);
+        $templateProcessor->setValue('date_requested', $workOrder->date_requested);
+        $templateProcessor->setValue('description', $workOrder->description);
+        $templateProcessor->setValue('status', $workOrder->status);
+        $templateProcessor->setValue('requisitioner_type', $workOrder->requisitioner_type);
+        $templateProcessor->setValue('college', $workOrder->college);
+        $templateProcessor->setValue('department', $workOrder->department);
+        $templateProcessor->setValue('concern', $workOrder->concern);
+        $templateProcessor->setValue('other_concern', $workOrder->other_concern);
+        $templateProcessor->setValue('completed_description', $workOrder->completed_description);
+        $templateProcessor->setValue('completed_by', $workOrder->completed_by); 
+        $templateProcessor->setValue('completed_by_id', $workOrder->completed_by_id);
+        $templateProcessor->setValue('received_by', $workOrder->received_by);
+        $templateProcessor->setValue('accepted_by', $workOrder->accepted_by);
+
+        // Add more fields as needed
+        
+        // Save the temporary file
+        $tempFilePath = tempnam(sys_get_temp_dir(), 'work_order_') . '.docx';
+        $templateProcessor->saveAs($tempFilePath);
+        
+        // Download the file
+        return response()->download($tempFilePath, "work_order_{$workOrder->ticket_number}.docx")->deleteFileAfterSend(true);
+    }
+    // Print PDF (direct print)
+    public function printPDF($id)
+{
+    $workOrder = WorkOrder::findOrFail($id);
+    
+    $pdf = Pdf::loadView('work-orders.print', [
+        'workOrder' => $workOrder
+    ]);
+    
+    // Return as PDF with print dialog
+    return $pdf->stream("work_order_{$workOrder->ticket_number}.pdf");
 }
 
 

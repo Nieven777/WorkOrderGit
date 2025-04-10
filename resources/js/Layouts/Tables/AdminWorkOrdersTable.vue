@@ -110,7 +110,7 @@ const openDetailView = (order) => {
 };
 
 // Close the detail view
-const closeDetailView = () => {
+const closeDetailView = () => { 
   showDetailView.value = false;
   selectedOrder.value = null;
 };

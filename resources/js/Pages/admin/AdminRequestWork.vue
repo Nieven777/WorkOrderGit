@@ -229,7 +229,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <body class="nav-fixed">
+  <body class="nav-fixed" >
     <AdminNav />
     <div v-if="loading" class="loading-screen">
       <div class="spinner"></div>

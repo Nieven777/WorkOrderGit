@@ -10,6 +10,7 @@ use App\Http\Controllers\CollegeDepartmentController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\WordExportController;
+use App\Http\Controllers\WorkOrderController;
 
 // Login page
 Route::get('/', function () {
@@ -89,7 +90,11 @@ Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->grou
 Route::post('/export-word', [WordExportController::class, 'exportToWord']);
 
 
+// Print as PDF (direct print)
+Route::get('/work-orders/{id}/print-pdf', [WorkOrderController::class, 'printPDF'])->name('work-orders.print-pdf');
 
+// Export as Word (download .docx)
+Route::get('/work-orders/{id}/export-word', [WorkOrderController::class, 'exportWord'])->name('work-orders.export-word');
 
     // Logout
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

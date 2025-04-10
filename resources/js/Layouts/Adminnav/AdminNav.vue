@@ -61,7 +61,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <body class="nav-fixed">
+    <!-- Disable page scrolling by setting overflow to hidden on the body -->
+    <body class="nav-fixed" style="overflow: hidden;">
         <!-- Top Navigation Bar -->
         <nav class="topnav navbar navbar-expand shadow justify-content-between navbar-light bg-white" id="sidenavAccordion">
             <a class="navbar-brand" href="/home">Work Order Monitoring</a>
@@ -122,7 +123,6 @@ onMounted(() => {
                 <nav class="sidenav shadow-right sidenav-light">
                     <div class="sidenav-menu">
                         <div class="nav accordion" id="accordionSidenav">
-
                             <!-- Dashboard -->
                             <a class="nav-link" href="/dashboard">
                                 <div class="nav-link-icon"><i data-feather="activity"></i></div>

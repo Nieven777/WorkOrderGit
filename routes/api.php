@@ -85,3 +85,6 @@ Route::middleware(['auth:sanctum', 'role:staff'])->group(function () {
     // Common endpoint for updating work orders (e.g., changing status, storing description, category, etc.)
     Route::patch('/work-orders/{id}', [WorkOrderController::class, 'update']);
 });
+
+//Printing work order
+Route::get('/work-orders/{id}/print', [WorkOrderController::class, 'print'])->name('work-orders.print');
