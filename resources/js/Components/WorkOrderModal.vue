@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import { CheckIcon, XIcon, PrinterIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon, FileTextIcon, UserIcon, BuildingIcon, TagIcon } from 'lucide-vue-next';
-
+import { CheckIcon, XIcon, PrinterIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon, FileTextIcon, UserIcon, BuildingIcon, TagIcon, CalendarIcon, InfoIcon, ClipboardIcon, HardHatIcon } from 'lucide-vue-next';
 // Define TypeScript interfaces
 interface WorkOrder {
   id: string;
@@ -141,23 +140,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- Full Page Content that works with existing layout -->
   <div class="w-full h-full bg-gray-50">
-    <!-- Header with actions and back button -->
-    <div class="bg-white shadow-sm border-b mb-6">
+    <!-- Header -->
+    <div class="bg-white border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="py-4 flex items-center justify-between">
+        <div class="py-3 flex items-center justify-between">
           <div class="flex items-center">
             <button 
               @click="$emit('close')" 
-              class="mr-3 p-2 rounded-md hover:bg-gray-100"
+              class="mr-2 p-1.5 rounded-md hover:bg-gray-100 text-gray-600 hover:text-gray-900"
               aria-label="Go back"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
             </button>
-            <h1 class="text-xl font-medium text-gray-800 flex items-center">
+            <h1 class="text-lg font-semibold text-gray-800 flex items-center">
               <FileTextIcon class="w-5 h-5 mr-2 text-blue-600" />
               Work Order Details
             </h1>
@@ -166,222 +164,185 @@ onMounted(() => {
           <div class="flex space-x-2">
             <button
               v-if="order?.status === 'Submitted'"
-              class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 focus:outline-none"
               @click="confirmAction('accept')"
             >
-              <CheckIcon class="mr-1 w-4 h-4" />
+              <CheckIcon class="mr-1.5 w-4 h-4" />
               Accept
             </button>
             <button
               v-if="order?.status === 'Submitted'"
-              class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 focus:outline-none"
               @click="confirmAction('decline')"
             >
-              <XIcon class="mr-1 w-4 h-4" />
+              <XIcon class="mr-1.5 w-4 h-4" />
               Decline
             </button>
             <button
               v-if="order?.status === 'Received'"
-              class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 focus:outline-none"
               @click="confirmAction('complete')"
               :disabled="!formValid"
             >
-              <CheckIcon class="mr-1 w-4 h-4" />
+              <CheckIcon class="mr-1.5 w-4 h-4" />
               Complete
             </button>
             <button 
-    class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-    @click="printWorkOrder"
-  >
-    <PrinterIcon class="mr-1 w-4 h-4" />
-    Export DOCX
-  </button>
+              class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded hover:bg-gray-700 focus:outline-none"
+              @click="printWorkOrder"
+            >
+              <PrinterIcon class="mr-1.5 w-4 h-4" />
+              Export
+            </button>
 
-  <button 
-        @click="printPDF"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >
-        <PrinterIcon class="inline mr-2" />
-        Print PDF
-    </button>
+            <button 
+              @click="printPDF"
+              class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none"
+            >
+              <PrinterIcon class="mr-1.5 w-4 h-4" />
+              Print
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
       <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center p-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      <div v-if="loading" class="flex items-center justify-center p-8">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
       </div>
 
       <!-- Content -->
-      <div v-else-if="order">
+      <div v-else-if="order" class="bg-white rounded-lg shadow-sm p-6">
         <!-- Status Banner -->
         <div 
-          class="mb-6 p-3 rounded-md flex items-center justify-between" 
+          class="mb-4 p-3 rounded-md flex items-center justify-between text-sm" 
           :class="getStatusColorClass(order.status)"
-          aria-live="polite"
         >
           <div class="flex items-center">
-            <CheckCircleIcon v-if="order.status === 'Completed'" class="mr-2 w-5 h-5" />
-            <ClockIcon v-else-if="order.status === 'Submitted'" class="mr-2 w-5 h-5" />
-            <AlertCircleIcon v-else class="mr-2 w-5 h-5" />
-            <span class="font-bold">Status: {{ order.status }}</span>
+            <CheckCircleIcon v-if="order.status === 'Completed'" class="mr-2 w-4 h-4" />
+            <ClockIcon v-else-if="order.status === 'Submitted'" class="mr-2 w-4 h-4" />
+            <AlertCircleIcon v-else class="mr-2 w-4 h-4" />
+            <span class="font-medium">Status: {{ order.status }}</span>
           </div>
-          <span class="text-sm">{{ order.date_requested }}</span>
+          <div class="flex items-center">
+            <CalendarIcon class="mr-1 w-4 h-4" />
+            <span>{{ order.date_requested }}</span>
+          </div>
         </div>
         
-        <!-- Tab Navigation -->
-        <div class="border-b border-gray-200 mb-6">
-          <div class="flex -mb-px">
-            <button 
-              @click="activeTab = 'details'" 
-              class="py-3 px-4 text-sm font-medium"
-              :class="activeTab === 'details' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            >
-              Order Details
-            </button>
-            <button 
-              @click="activeTab = 'history'" 
-              class="py-3 px-4 text-sm font-medium"
-              :class="activeTab === 'history' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            >
-              History
-            </button>
-          </div>
-        </div>
-
-        <!-- Details Tab -->
-        <div v-if="activeTab === 'details'" class="space-y-6 pb-8">
-          <!-- Basic Info Card -->
-          <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h4 class="text-lg font-semibold mb-4 text-gray-800">Order Information</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Document Layout -->
+        <div class="space-y-6">
+          <!-- Ticket Number -->
+          <div class="pb-4 border-b border-gray-100">
+            <h2 class="text-base font-semibold mb-2 text-gray-800 flex items-center">
+              <TagIcon class="w-4 h-4 mr-2 text-blue-600" />
+              Ticket Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Ticket Number</label>
-                <p class="mt-1 font-semibold text-blue-700">{{ order.ticket_number }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 flex items-center">
-                  <UserIcon class="w-4 h-4 mr-1" />
-                  Requested By
-                </label>
-                <p class="mt-1">{{ order.requested_by }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Requisitioner Type</label>
-                <p class="mt-1">{{ order.requisitioner_type }}</p>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Ticket Number</label>
+                <p class="font-medium text-blue-700">{{ order.ticket_number }}</p>
               </div>
             </div>
           </div>
 
-          <!-- Department Info Card -->
-          <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h4 class="text-lg font-semibold mb-4 text-gray-800">Department Information</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Requester Information -->
+          <div class="pb-4 border-b border-gray-100">
+            <h2 class="text-base font-semibold mb-2 text-gray-800 flex items-center">
+              <UserIcon class="w-4 h-4 mr-2 text-blue-600" />
+              Requester Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 flex items-center">
-                  <BuildingIcon class="w-4 h-4 mr-1" />
-                  College/Unit
-                </label>
-                <p class="mt-1">{{ order.college }}</p>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Requested By</label>
+                <p>{{ order.requested_by }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Department</label>
-                <p class="mt-1">{{ order.department }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 flex items-center">
-                  <TagIcon class="w-4 h-4 mr-1" />
-                  Concern
-                </label>
-                <p class="mt-1">{{ order.concern }}</p>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Requisitioner Type</label>
+                <p>{{ order.requisitioner_type }}</p>
               </div>
             </div>
           </div>
 
-          <!-- Description Card -->
-          <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h4 class="text-lg font-semibold mb-4 text-gray-800">Request Details</h4>
+          <!-- Department Information -->
+          <div class="pb-4 border-b border-gray-100">
+            <h2 class="text-base font-semibold mb-2 text-gray-800 flex items-center">
+              <BuildingIcon class="w-4 h-4 mr-2 text-blue-600" />
+              Department Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">College/Unit</label>
+                <p>{{ order.college }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Department</label>
+                <p>{{ order.department }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Concern</label>
+                <p>{{ order.concern }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Request Details -->
+          <div class="pb-4 border-b border-gray-100">
+            <h2 class="text-base font-semibold mb-2 text-gray-800 flex items-center">
+              <ClipboardIcon class="w-4 h-4 mr-2 text-blue-600" />
+              Request Details
+            </h2>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Description</label>
-              <p class="mt-1 whitespace-pre-line">{{ order.description }}</p>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Description</label>
+              <p class="whitespace-pre-line text-sm bg-gray-50 p-3 rounded">{{ order.description }}</p>
             </div>
           </div>
 
-          <!-- Completion Details Card (Only for Received or Completed orders) -->
-          <div 
-            v-if="order.status === 'Received' || order.status === 'Completed'" 
-            class="bg-white p-6 rounded-lg shadow-sm"
-          >
-            <h4 class="text-lg font-semibold mb-4 text-gray-800">
+          <!-- Work Progress -->
+          <div v-if="order.status === 'Received' || order.status === 'Completed'">
+            <h2 class="text-base font-semibold mb-2 text-gray-800 flex items-center">
+              <HardHatIcon class="w-4 h-4 mr-2 text-blue-600" />
               {{ order.status === 'Completed' ? 'Completion Details' : 'Work Progress' }}
-            </h4>
+            </h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div v-if="order.accepted_by">
-                <label class="block text-sm font-medium text-gray-700">Accepted By</label>
-                <p class="mt-1">{{ order.accepted_by }}</p>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Accepted By</label>
+                <p>{{ order.accepted_by }}</p>
               </div>
               <div v-if="order.status === 'Completed' && order.completed_by">
-                <label class="block text-sm font-medium text-gray-700">Completed By</label>
-                <p class="mt-1">{{ order.completed_by }}</p>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Completed By</label>
+                <p>{{ order.completed_by }}</p>
               </div>
               <div v-if="order.status === 'Completed' && order.category">
-                <label class="block text-sm font-medium text-gray-700">Category</label>
-                <p class="mt-1">{{ order.category }}</p>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Category</label>
+                <p>{{ order.category }}</p>
               </div>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700">
-                Completed Description
+              <label class="block text-sm font-medium text-gray-600 mb-1">
+                Work Description
                 <span v-if="order.status === 'Received'" class="text-red-500">*</span>
               </label>
-              <textarea
-                v-if="order.status === 'Received'"
-                v-model="completedDescription"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                :class="{'border-red-500': errors.completed_description}"
-                rows="4"
-                placeholder="Enter description of completed work"
-              ></textarea>
-              <p v-else class="mt-1 whitespace-pre-line border p-3 bg-gray-50 rounded">{{ completedDescription || order.completed_description }}</p>
-              <p v-if="errors.completed_description" class="mt-1 text-sm text-red-600">
-                {{ errors.completed_description }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- History Tab -->
-        <div v-else-if="activeTab === 'history'" class="bg-white p-6 rounded-lg shadow-sm">
-          <h4 class="text-lg font-semibold mb-6 text-gray-800">Work Order History</h4>
-          
-          <div class="relative">
-            <!-- Timeline -->
-            <div class="border-l-2 border-blue-500 ml-4">
-              <div 
-                v-for="(item, index) in historyData" 
-                :key="index"
-                class="mb-8 ml-6"
-              >
-                <div class="absolute w-4 h-4 bg-blue-500 rounded-full mt-1.5 -left-2 border-2 border-white"></div>
-                <div class="flex flex-wrap items-center mb-1 gap-2">
-                  <time class="text-sm font-medium text-gray-500">{{ item.date }}</time>
-                  <span 
-                    class="text-xs font-medium px-2 py-1 rounded-full"
-                    :class="{'bg-green-100 text-green-800': item.action === 'Completed', 
-                            'bg-blue-100 text-blue-800': item.action === 'Submitted',
-                            'bg-yellow-100 text-yellow-800': item.action === 'Accepted'}"
-                  >
-                    {{ item.action }}
-                  </span>
-                </div>
-                <h3 class="text-md font-medium">{{ item.user }}</h3>
-                <p v-if="item.notes" class="mt-1 text-gray-600">{{ item.notes }}</p>
+              <div v-if="order.status === 'Received'">
+                <textarea
+                  v-model="completedDescription"
+                  class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm p-2"
+                  :class="{'border-red-500': errors.completed_description}"
+                  rows="4"
+                  placeholder="Describe work performed..."
+                ></textarea>
+                <p v-if="errors.completed_description" class="mt-1 text-xs text-red-600 flex items-start">
+                  <InfoIcon class="mr-1 w-3 h-3 mt-0.5" />
+                  {{ errors.completed_description }}
+                </p>
+              </div>
+              <div v-else class="bg-gray-50 p-3 rounded">
+                <p class="whitespace-pre-line text-sm">{{ completedDescription || order.completed_description }}</p>
               </div>
             </div>
           </div>
@@ -390,105 +351,95 @@ onMounted(() => {
 
       <!-- Error State -->
       <div v-else class="bg-white p-6 rounded-lg shadow-sm text-center">
-        <AlertCircleIcon class="mx-auto mb-4 w-12 h-12 text-red-500" />
-        <h3 class="text-lg font-medium text-gray-900">No order data available</h3>
-        <p class="text-gray-500">Unable to load work order details</p>
+        <AlertCircleIcon class="mx-auto mb-3 w-8 h-8 text-red-500" />
+        <h3 class="text-base font-medium text-gray-900">No order data available</h3>
+        <p class="text-sm text-gray-500">Unable to load work order details</p>
       </div>
     </div>
-  </div>
 
-  <!-- Confirmation Dialog -->
-  <div 
-    v-if="showConfirmation"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-25"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="confirmation-title"
-  >
-    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-      <h3 id="confirmation-title" class="text-lg font-medium text-gray-900 mb-4">
-        Confirm Action
-      </h3>
-      <p class="mb-5 text-gray-600">
-        Are you sure you want to 
-        <span class="font-bold" v-if="showConfirmation === 'accept'">accept</span>
-        <span class="font-bold" v-if="showConfirmation === 'decline'">decline</span>
-        <span class="font-bold" v-if="showConfirmation === 'complete'">complete</span>
-        this work order?
-      </p>
-      <div class="flex justify-end gap-2">
-        <button 
-          class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50"
-          @click="showConfirmation = null"
-        >
-          Cancel
-        </button>
-        <button 
-          class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-          @click="executeAction(showConfirmation)"
-        >
-          Confirm
-        </button>
+    <!-- Confirmation Dialog -->
+    <div 
+      v-if="showConfirmation"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-25"
+    >
+      <div class="bg-white rounded-lg shadow-sm p-4 w-full max-w-sm mx-4">
+        <h3 class="text-base font-semibold text-gray-900 mb-3">
+          Confirm Action
+        </h3>
+        <p class="mb-4 text-sm text-gray-600">
+          Are you sure you want to 
+          <span class="font-medium" v-if="showConfirmation === 'accept'">accept</span>
+          <span class="font-medium" v-if="showConfirmation === 'decline'">decline</span>
+          <span class="font-medium" v-if="showConfirmation === 'complete'">complete</span>
+          this work order?
+        </p>
+        <div class="flex justify-end gap-2">
+          <button 
+            class="px-3 py-1.5 border border-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-50"
+            @click="showConfirmation = null"
+          >
+            Cancel
+          </button>
+          <button 
+            class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700"
+            @click="executeAction(showConfirmation)"
+          >
+            Confirm
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Ensure spacing is consistent */
-.grid {
-  gap: 1.5rem;
+/* Professional, compact styling */
+body {
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* Ensure form controls match your app's styling */
-textarea, input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
+/* Tighten up spacing */
+.space-y-6 > * + * {
+  margin-top: 1.25rem;
 }
 
-textarea:focus, input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+/* Subtle borders */
+.border-gray-100 {
+  border-color: #f3f4f6;
 }
 
-/* Make sure text is readable */
-p {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+/* Professional shadows */
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 500;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .grid-cols-3, .grid-cols-2 {
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .grid-cols-2 {
     grid-template-columns: 1fr;
   }
   
-  .flex-wrap {
-    flex-wrap: wrap;
+  /* Stack buttons on mobile */
+  .flex.space-x-2 {
+    flex-direction: column;
+    gap: 0.5rem;
   }
   
-  .mr-3 {
-    margin-right: 0.5rem;
+  .flex.space-x-2 > * {
+    width: 100%;
   }
 }
 
-/* Subtle animation for tab switching */
-.tab-content-enter-active,
-.tab-content-leave-active {
-  transition: opacity 0.3s ease;
+/* Focus states for accessibility */
+button:focus, input:focus, textarea:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+  box-shadow: none;
 }
 
-.tab-content-enter-from,
-.tab-content-leave-to {
-  opacity: 0;
+/* Tighten up textarea */
+textarea {
+  min-height: 100px;
 }
 </style>

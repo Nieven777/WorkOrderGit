@@ -298,6 +298,7 @@ public function print($id)
         $templateProcessor->setValue('completed_by_id', $workOrder->completed_by_id);
         $templateProcessor->setValue('received_by', $workOrder->received_by);
         $templateProcessor->setValue('accepted_by', $workOrder->accepted_by);
+        $templateProcessor->setValue('category', $workOrder->category);
 
         // Add more fields as needed
         

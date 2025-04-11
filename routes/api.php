@@ -88,3 +88,4 @@ Route::middleware(['auth:sanctum', 'role:staff'])->group(function () {
 
 //Printing work order
 Route::get('/work-orders/{id}/print', [WorkOrderController::class, 'print'])->name('work-orders.print');
+
