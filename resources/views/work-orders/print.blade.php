@@ -4,26 +4,207 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Work Order #{{ $workOrder->ticket_number }}</title>
-     <style>
-        /* Print-specific styles */
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+        
+        /* .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+         */
+        /* Header styles */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo {
+            width: 100px;
+            margin-right: 10px;
+        }
+        
+        .logo img {
+            width: 100%;
+            border-radius: 50%;
+        }
+        
+        .header-text {
+            flex-grow: 1;
+            text-align: left;
+        }
+        
+        .header-text h4, .header-text h3 {
+            margin: 5px 0;
+        }
+        
+        .divider {
+            height: 1px;
+            width: 100%;
+            background-color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .dept-header {
+            text-align: left;
+            margin: 10px 0;
+        }
+        
+        .form-title {
+            text-align: center;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        /* Form fields and tables */
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        td, th {
+            border: 1px solid black;
+            padding: 6px;
+        }
+        
+        .dotted-line {
+            border-bottom: 1px dotted black;
+            display: inline-block;
+            width: 15%;
+        }
+        
+        /* Form sections */
+        .checkboxes {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-item {
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: 1px solid black;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        
+        /* Signature sections */
+        .signature-block {
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid black;
+            margin-top: 30px;
+            font-size: 10px;
+            text-align: center;
+            width: 200px;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        .signature-column {
+            width: 45%;
+        }
+        
+        /* DTO section */
+        .dto-section {
+            border: 1px solid black;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        
+        .category-types {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .category-item {
+            width: 50%;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Acceptance and completion section */
+        .acceptance-section {
+            display: flex;
+            margin-top: 20px;
+        }
+        
+        .acceptance-column {
+            width: 50%;
+            text-align: center;
+        }
+        
+        /* Footer */
+        .footer {
+            font-size: 10px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Print specific styles */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printTable, #printTable * {
-                visibility: visible;
-            }
-            #printTable {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+            body {
                 margin: 0;
-                padding: 20px;
+                padding: 0;
             }
-            .notincluded, .notincludedacceptance, .notincludedcompleted {
+            
+            .container {
+                border: none;
+                width: 100%;
+                max-width: none;
+            }
+            
+            @page {
+                margin: 0.5cm;
+                size: 8.5in 14in portrait;
+            }
+            
+            /* Hide elements with these classes when printing */
+            .no-print {
                 display: none !important;
             }
+            .header {
+            display: flex !important;
+            page-break-inside: avoid;
+        }
+        .logo {
+            flex-shrink: 0 !important;
+        }
+
         }
     </style>
     <script>
@@ -39,222 +220,231 @@
         };
     </script>
 </head>
-
-<body class="">
-    <div class="pcoded-main-container">
-        <div class="pcoded-content container">
-            <div class="row">
-                <div class="col-sm-12">
-                    <form class="container" method="post">
-                        <div id="workform">
-                            <div class="printableborder card" id="printTable">
-                                <div class="card-body">
-                                    <div class="notincluded col-sm-12 row mb-3">
-                                        <!-- <img src="assets/img/logo_cmu.png" alt="CMU Logo" class="img-fluid img-radius wid-100"> -->
-                                        <div class="col-sm-10">
-                                            <h5 class="text-secondary mb-0 mt-3">Republic of the Philippines</h5>
-                                            <h4 class="mb-0">CENTRAL MINDANAO UNIVERSITY</h4>
-                                            <h5 class="text-secondary">Musuan, Maramag, Bukidnon</h5>
-                                        </div>
-                                    </div>
-
-                                    <div class="notincluded progress mb-1" style="height:2px;">
-                                        <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-
-                                    <h4 class="notincluded mt-0">DIGITAL TRANSFORMATION OFFICE</h4>
-                                    <div class="notincluded col-sm-12 mb-3 mt-4 text-center">
-                                        <h4 class="mb-0">WORK ORDER REQUEST FORM</h4>
-                                        <h5 class="text-secondary">(Services Only)</h5>
-                                    </div>
-
-                                    <div class="notincluded col-sm-12 mb-3 mt-4 row justify-content-between">
-                                        <div class="col-sm-5 row">
-                                            <div class="col-sm-12 row">
-                                                <h5 class="text-secondary col-sm-4 mr-0">Ticket No.</h5>
-                                                <div class="col-sm-6 pl-0">
-                                                    <input type="text" class="text-secondary col-sm-12" style="border: none; border-bottom: solid black 1px;" name="ticket_no" value="{{ $workOrder->ticket_number }}" readonly>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-5">
-                                            <div class="col-sm-12 row justify-content-end">
-                                                <h5 class="text-secondary col-sm-3">Date:</h5>
-                                                <div class="col-sm-6 pl-0">
-                                                    <h5 class="text-secondary col-sm-12" style="border-bottom: solid black 1px;">{{ $workOrder->date_requested }}</h5>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="notincluded col-sm-12">
-                                        <div class="row">
-                                            <div class="datta-example col-sm-2 pb-0 pt-2 text-center">
-                                                <h6 class="text-secondary">Requested by</h6>
-                                            </div>
-                                            <div class="datta-example col-sm-10 pb-0 pt-2 text-center">
-                                                <h5 class="text-secondary">{{ $workOrder->requested_by }}</h5>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="datta-example col-sm-2 pb-0 pt-2 text-center">
-                                                <h6 class="text-secondary">College/Unit</h6>
-                                            </div>
-
-                                            <div class="datta-example col-sm-4 pb-0 pt-2 text-center">
-                                                <h5 class="text-secondary">{{ $workOrder->college }}</h5>
-                                            </div>
-
-                                            <div class="datta-example col-sm-2 pb-0 pt-2 text-center">
-                                                <h6 class="text-secondary">Department</h6>
-                                            </div>
-
-                                            <div class="datta-example col-sm-4 pb-0 pt-2 text-center">
-                                                <h5 class="text-secondary">{{ $workOrder->department }}</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="notincluded datta-example col-sm-12 mt-3 pb-0 pt-2">
-                                        <h5 class="text-secondary">Work order details</h5>
-                                    </div>
-
-                                    <div class="notincluded datta-example col-sm-12 pt-1 pb-1">
-                                        <div class="custom-control custom-checkbox custom-control-inline col-sm-2">
-                                            <input type="checkbox" class="custom-control-input input-dark" id="FACULTY" {{ $workOrder->requisitioner_type === 'FACULTY' ? 'checked' : '' }} disabled>
-                                            <label class="custom-control-label" for="FACULTY">FACULTY</label>
-                                        </div>
-                                        <div class="custom-control custom-checkbox custom-control-inline col-sm-2">
-                                            <input type="checkbox" class="custom-control-input input-dark" id="STAFF" {{ $workOrder->requisitioner_type === 'STAFF' ? 'checked' : '' }} disabled>
-                                            <label class="custom-control-label" for="STAFF">STAFF</label>
-                                        </div>
-                                        <div class="custom-control custom-checkbox custom-control-inline col-sm-2">
-                                            <input type="checkbox" class="custom-control-input input-dark" id="STUDENT" {{ $workOrder->requisitioner_type === 'STUDENT' ? 'checked' : '' }} disabled>
-                                            <label class="custom-control-label" for="STUDENT">STUDENT</label>
-                                        </div>
-                                        <div class="custom-control custom-checkbox custom-control-inline col-sm-4">
-                                            <input type="checkbox" class="custom-control-input input-dark" id="customCheckc7" {{ !in_array($workOrder->requisitioner_type, ['FACULTY', 'STAFF', 'STUDENT']) ? 'checked' : '' }} disabled>
-                                            <label class="custom-control-label" for="customCheckc7">Others, please specify</label>
-                                            <h6 class="text-secondary text-center col-sm-5 ml-2" style="border-bottom: solid black 1px;">{{ !in_array($workOrder->requisitioner_type, ['FACULTY', 'STAFF', 'STUDENT']) ? $workOrder->requisitioner_type : '' }}</h6>
-                                        </div>
-                                    </div>
-
-                                    <div class="notincluded datta-example col-sm-12 pt-1 pb-1">
-                                        <div class="custom-control custom-checkbox custom-control-inline col-sm-3">
-                                            <input type="checkbox" class="custom-control-input input-dark" id="ENROLLMENT" {{ $workOrder->concern === 'ENROLLMENT' ? 'checked' : '' }} disabled>
-                                            <label class="custom-control-label" for="ENROLLMENT">ENROLLMENT</label>
-                                        </div>
-                                        <div class="custom-control custom-checkbox custom-control-inline col-sm-3">
-                                            <input type="checkbox" class="custom-control-input input-dark" id="REPAIR" {{ $workOrder->concern === 'REPAIR' ? 'checked' : '' }} disabled>
-                                            <label class="custom-control-label" for="REPAIR">REPAIR</label>
-                                        </div>
-                                        <div class="custom-control custom-checkbox custom-control-inline col-sm-5">
-                                            <input type="checkbox" class="custom-control-input input-dark" id="customCheckc7" {{ !in_array($workOrder->concern, ['ENROLLMENT', 'REPAIR']) ? 'checked' : '' }} disabled>
-                                            <label class="custom-control-label" for="customCheckc7">Others, please specify</label>
-                                            <h6 class="text-secondary text-center col-sm-7 ml-2" style="border-bottom: solid black 1px;">{{ !in_array($workOrder->concern, ['ENROLLMENT', 'REPAIR']) ? $workOrder->concern : '' }}</h6>
-                                        </div>
-                                    </div>
-                                    <div class="notincluded datta-example col-sm-12 pb-0 pt-2">
-    <h5 class="text-secondary">Category</h5>
-</div>
-
-<div class="notincluded datta-example col-sm-12 pt-1 pb-1">
-    <div class="custom-control custom-checkbox custom-control-inline col-sm-3">
-        <input type="checkbox" class="custom-control-input input-dark" id="categoryI" {{ $workOrder->category === 'Category I' ? 'checked' : '' }} disabled>
-        <label class="custom-control-label" for="categoryI">Category I (1 day)</label>
+<body>
+    <div class="container" id="printTable">
+<!-- Header with logo - Print-optimized version -->
+<div style="display: table; width: 100%; page-break-inside: avoid; padding: top 0;">
+    <div style="display: table-cell; vertical-align: middle; width: 100px;">
+        <img src="assets/img/logo_cmu.png" alt="CMU Logo" style="height: 100px; width: auto;">
     </div>
-    <div class="custom-control custom-checkbox custom-control-inline col-sm-3">
-        <input type="checkbox" class="custom-control-input input-dark" id="categoryII" {{ $workOrder->category === 'Category II' ? 'checked' : '' }} disabled>
-        <label class="custom-control-label" for="categoryII">Category II (1–3 days)</label>
-    </div>
-    <div class="custom-control custom-checkbox custom-control-inline col-sm-3">
-        <input type="checkbox" class="custom-control-input input-dark" id="categoryIII" {{ $workOrder->category === 'Category III' ? 'checked' : '' }} disabled>
-        <label class="custom-control-label" for="categoryIII">Category III (4–7 days)</label>
-    </div>
-    <div class="custom-control custom-checkbox custom-control-inline col-sm-3">
-        <input type="checkbox" class="custom-control-input input-dark" id="categoryIV" {{ $workOrder->category === 'Category IV' ? 'checked' : '' }} disabled>
-        <label class="custom-control-label" for="categoryIV">Category IV (7+ days)</label>
+    <div style="display: table-cell; vertical-align: middle; padding-left: 20px;">
+        <h4 style="color:rgb(0, 0, 0); font-weight: normal; margin: 0;">Republic of the Philippines</h4>
+        <h3 style="font-weight: bold; margin: 0 0 5px 0;">CENTRAL MINDANAO UNIVERSITY</h3>
+        <h4 style="color:rgb(0, 0, 0); font-weight: normal; margin: 0;">Musuan, Maramag, Bukidnon</h4>
     </div>
 </div>
 
+        
+        <div class="divider"></div>
+        
+        <div class="dept-header">
+            <h3 style="font-weight: bold;">OFFICE OF DIGITAL TRANSFORMATION</h3>
+        </div>
+        
+        <div class="form-title">
+            <h3>WORK ORDER REQUEST FORM</h3>
+            <h4 style="color:rgb(0, 0, 0); font-weight: normal;">(Services Only)</h4>
+        </div>
+        
+        <!-- Ticket and Date section -->
+        <div class="form-group">
+            <span>Ticket No. <span class="dotted-line">{{ $workOrder->ticket_number }}</span></span>
+            <span style="text-align: right;">Date: <span class="dotted-line">{{ $workOrder->date_requested }}</span></span>
+        </div>
+        
+<!-- Requester Information Table -->
+<table border="1" style="border-collapse: collapse;">
+    <tr>
+        <td width="25%"><strong>Requested by</strong></td>
+        <td width="100%">{{ $workOrder->requested_by }}</td>
+    </tr>
+    <tr>
+        <td width="15%"><strong>College/Unit</strong></td>
+        <td width="15%">{{ $workOrder->college }}</td>
 
-                                    <div class="notincluded datta-example col-sm-12 pb-0 pt-2">
-                                        <h5 class="text-secondary">Description of work order requested</h5>
-                                    </div>
+        <td width="15%"><strong>Department</strong></td>
+        <td width="35%">{{ $workOrder->department }}</td>
 
-                                    <div class="notincluded datta-example col-sm-12 mt-0">
-                                        <p class="text-secondary mt-0 pt-0" style="height:50px; white-space: pre-line;">{{ $workOrder->description }}</p>
-                                    </div>
+    </tr>
 
-                                    <!-- Signature sections remain unchanged as they're static -->
-                                    <!-- ... rest of your template remains the same ... -->
+</table>
+        
+        <!-- Work Order Details Table -->
+        <table>
+            <tr>
+                <td colspan="2"><strong>Work Order Details</strong></td>
+            </tr>
+            <tr>
+    <td width="50%">
+        <!-- Horizontal checkbox group for Requester Type -->
+        <table cellspacing="0" cellpadding="0" style="border: none;">
+            <tr>
+                <!-- Student -->
+                <td style="padding-right: 20px; white-space: nowrap;">
+                    <input type="checkbox" id="STUDENT" name="requestType" value="STUDENT" {{ $workOrder->requisitioner_type === 'STUDENT' ? 'checked' : '' }} disabled>
+                    <label for="STUDENT">Student</label>
+                </td>
+                
+                <!-- Faculty -->
+                <td style="padding-right: 20px; white-space: nowrap;">
+                    <input type="checkbox" id="FACULTY" name="requestType" value="FACULTY" {{ $workOrder->requisitioner_type === 'FACULTY' ? 'checked' : '' }} disabled>
+                    <label for="FACULTY">Faculty</label>
+                </td>
+                
+                <!-- Staff -->
+                <td style="padding-right: 20px; white-space: nowrap;">
+                    <input type="checkbox" id="STAFF" name="requestType" value="STAFF" {{ $workOrder->requisitioner_type === 'STAFF' ? 'checked' : '' }} disabled>
+                    <label for="STAFF">Staff</label>
+                </td>
+                
+                <!-- Other -->
+                <td style="white-space: nowrap;">
+                    <input type="checkbox" id="otherType" name="requestType" value="other" {{ !in_array($workOrder->requisitioner_type, ['FACULTY', 'STAFF', 'STUDENT']) ? 'checked' : '' }} disabled>
+                    <label for="otherType">Other, specify:</label>
+                    <span style="border-bottom: 1px dotted #000; min-width: 100px; display: inline-block;">
+                        {{ !in_array($workOrder->requisitioner_type, ['FACULTY', 'STAFF', 'STUDENT']) ? $workOrder->requisitioner_type : '' }}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr>
+    <td width="50%">
+        <div style="margin-bottom: 5px;"><strong>Concern:</strong></div>
+        
+        <!-- Horizontal checkbox group for Concern -->
+        <table cellspacing="0" cellpadding="0" style="border: none;">
+            <tr>
+                <!-- Enrollment -->
+                <td style="padding-right: 20px; white-space: nowrap;">
+                    <input type="checkbox" id="ENROLLMENT" name="concern" value="ENROLLMENT" {{ $workOrder->concern === 'ENROLLMENT' ? 'checked' : '' }} disabled>
+                    <label for="ENROLLMENT">Enrollment</label>
+                </td>
+                
+                <!-- Repair -->
+                <td style="padding-right: 20px; white-space: nowrap;">
+                    <input type="checkbox" id="REPAIR" name="concern" value="REPAIR" {{ $workOrder->concern === 'REPAIR' ? 'checked' : '' }} disabled>
+                    <label for="REPAIR">Repair</label>
+                </td>
+                
+                <!-- Other -->
+                <td style="white-space: nowrap;">
+                    <input type="checkbox" id="otherConcern" name="concern" value="other" {{ !in_array($workOrder->concern, ['ENROLLMENT', 'REPAIR']) ? 'checked' : '' }} disabled>
+                    <label for="otherConcern">Other, specify:</label>
+                    <span style="border-bottom: 1px dotted #000; min-width: 100px; display: inline-block;">
+                        {{ !in_array($workOrder->concern, ['ENROLLMENT', 'REPAIR']) ? $workOrder->concern : '' }}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+            <tr>
+                <td colspan="2">
+                    <div>Description of work order requested</div>
+            
+                    
+                </td>
 
-                                    @if($workOrder->status === 'Completed' || $workOrder->status === 'Received')
-                                    <div class="notincluded datta-example col-sm-12 pb-0 pt-2">
-                                        <h5 class="text-secondary">Description of Completed work order</h5>
-                                    </div>
-
-                                    <div class="notincluded datta-example col-sm-12 mt-0">
-                                        <p class="text-secondary mt-0 pt-0" style="height:50px; white-space: pre-line;">{{ $workOrder->completed_description ?? '' }}</p>
-                                    </div>
-
-                                    <div id="acceptance" class="col-sm-12">
-                                        <div class="notincludedacceptance row">
-                                            <div class="datta-example col-sm-6 pb-0 pt-2">
-                                                <h5 class="text-secondary text-center">ACCEPTANCE</h5>
-                                            </div>
-                                            <div class="datta-example col-sm-6 pb-0 pt-2">
-                                                <h5 class="text-secondary text-center">COMPLETED</h5>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="datta-example col-sm-4 pb-0 pt-2">
-                                                <h5 class="notincludedacceptance text-secondary">Accepted by</h5>
-                                                <h5 class="text-secondary text-center fortopmargin" style="height:10px;">{{ $workOrder->accepted_by ?? '' }}</h5>
-                                                <div class="notincludedacceptance progress mb-1" style="height:2px;">
-                                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                                <h5 class="notincludedacceptance text-secondary text-center">Signature over printed name</h5>
-                                            </div>
-
-                                            <div class="fortopmargin datta-example col-sm-2 pb-0 pt-2 text-center">
-                                                <h5 class="notincludedacceptance text-secondary">Date</h5>
-                                            </div>
-
-                                            <div class="datta-example col-sm-4 pb-0 pt-2">
-                                                <h5 class="notincludedcompleted text-secondary">Attended Personnel</h5>
-                                                <h5 class="print-com text-secondary text-center fortopmargin" style="height:10px;">{{ $workOrder->completed_by ?? '' }}</h5>
-                                                <div class="notincludedcompleted progress mb-1" style="height:2px;">
-                                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                                <h5 class="notincludedcompleted text-secondary text-center">Signature over printed name</h5>
-                                            </div>
-
-                                            <div class="fortopmargin print-com datta-example col-sm-2 pb-0 pt-2 text-center">
-                                                <h5 class="notincludedcompleted text-secondary">Date</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endif
-
-                                    <div class="notincluded progress mb-1 mt-4" style="height:2px;">
-                                        <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-
-                                    <div class="notincluded d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-0 text-body">CMU-F-4-DTO-001</h5>
-                                        <h5 class="mb-0 text-body">22 December 2021</h5>
-                                        <h5 class="mb-0 text-body">Rev 1</h5>
-                                        <h5 class="mb-0 text-body">Page 1 of 1</h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+            </tr>
+            <tr>
+                <td colspan="2">
+                <div style="min-height: 100px; white-space: pre-line; padding: 5px; ">{{ $workOrder->description }}</div>
+                </td>
+        </table>
+        
+        <!-- Signature section -->
+        <div class="signatures">
+            <div class="signature-column">
+                <div class="signature-block">
+                    <div class="signature-line">Signature over printed name</div>
+                    <div>Requested by:</div>
+                </div>
+                
+                <div class="signature-block">
+                    <div class="signature-line">Head of Office/Department of Requisitioner</div>
+                    <div>Recommending Approval:</div>
                 </div>
             </div>
+            
+            <div class="signature-column">
+                <div class="signature-block">
+                    <div class="signature-line">Attending Personnel</div>
+                    <div>Received by:</div>
+                </div>
+                
+                <div class="signature-block">
+                    <div class="signature-line">CARLO MARTIN A. SARAUSA</div>
+                    <div>Approved by:</div>
+                    <div>Director, DTO</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DTO Section -->
+        <div class="dto-section">
+            <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">TO BE FILLED UP BY DTO</div>
+            
+            <div>Category Type</div>
+            <div class="category-types">
+                <div class="category-item">
+                    <input type="radio" id="categoryI" name="category" value="Category I" {{ $workOrder->category === 'Category I' ? 'checked' : '' }} disabled>
+                    <label for="categoryI">Category I (within one working day)</label>
+                </div>
+                <div class="category-item">
+                    <input type="radio" id="categoryII" name="category" value="Category II" {{ $workOrder->category === 'Category II' ? 'checked' : '' }} disabled>
+                    <label for="categoryII">Category II (1-3 working days)</label>
+                </div>
+                <div class="category-item">
+                    <input type="radio" id="categoryIII" name="category" value="Category III" {{ $workOrder->category === 'Category III' ? 'checked' : '' }} disabled>
+                    <label for="categoryIII">Category III (4-7 working days)</label>
+                </div>
+                <div class="category-item">
+                    <input type="radio" id="categoryIV" name="category" value="Category IV" {{ $workOrder->category === 'Category IV' ? 'checked' : '' }} disabled>
+                    <label for="categoryIV">Category IV (Unattainable)</label>
+                </div>
+            </div>
+            
+            <!-- Only show completed work description if status is Completed or Received -->
+            @if($workOrder->status === 'Completed' || $workOrder->status === 'Received')
+            <div style="margin-top: 15px;">
+                <div>Description of completed work order</div>
+                <div style="min-height: 100px; white-space: pre-line; padding: 5px; border: 1px solid #ccc;">{{ $workOrder->completed_description ?? '' }}</div>
+            </div>
+            
+            <!-- Acceptance section -->
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+                <div style="width: 45%; text-align: center;">
+                    <div style="font-weight: bold; margin-bottom: 15px;">ACCEPTANCE</div>
+                    <div style="margin-top: 40px;">
+                        <div class="signature-line">{{ $workOrder->accepted_by ?? '' }}</div>
+                        <div>Requisitioner:</div>
+                    </div>
+                    <div style="margin-top: 15px;">Date: ___________________</div>
+                </div>
+                
+                <div style="width: 45%; text-align: center;">
+                    <div style="font-weight: bold; margin-bottom: 15px;">COMPLETED</div>
+                    <div style="margin-top: 40px;">
+                        <div class="signature-line">{{ $workOrder->completed_by ?? '' }}</div>
+                        <div>Attending Personnel:</div>
+                    </div>
+                    <div style="margin-top: 15px;">Date: ___________________</div>
+                </div>
+            </div>
+            @else
+            <div style="margin-top: 15px;">Description of completed work order</div>
+            <textarea name="completedWorkDescription" disabled></textarea>
+            @endif
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div>CMU-F-4-DTO-001</div>
+            <div>12 February 2024</div>
+            <div>Rev. 2</div>
+            <div>Page 1 of 1</div>
         </div>
     </div>
 </body>
